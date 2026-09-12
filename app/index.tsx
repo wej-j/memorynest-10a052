@@ -1,19 +1,29 @@
-import { Image } from 'expo-image';
+import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Typography, useThemeColor } from 'heroui-native';
 import { ChevronUp } from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PanResponder, useWindowDimensions, View } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 
-import { FilmReel, type ReelFrame } from '@/components/FilmReel';
 import { StepDots } from '@/components/StepDots';
 import { LinearGradient } from '@/components/ui/primitives/LinearGradient';
-import { SEED_PHOTO_SOURCES } from '@/lib/images';
-import { randomWebPhotos, shuffle } from '@/lib/reelPhotos';
 
-const HERO = require('@/assets/brand/start-hero.png');
 const REMORY_LOGO = require('@/assets/brand/remory-logo.png');
+
+const CLUSTER_PHOTOS: ImageSource[] = [
+  require('@/assets/seed/market-flowers.png'),
+  require('@/assets/seed/castle-hill.png'),
+  require('@/assets/seed/sunset-sea.png'),
+  require('@/assets/seed/gelato-rome.png'),
+];
 
 /**
  * Start page (step 1 of 3): brand, tagline and the moving film reel.
