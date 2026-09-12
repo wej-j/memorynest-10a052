@@ -1,11 +1,12 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { CaptureForm } from '@/components/CaptureForm';
 import { StepDots } from '@/components/StepDots';
 import { StepHeader } from '@/components/StepHeader';
+import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
 import { goBackOrReplace } from '@/lib/navigation';
 
 export default function StartCaptureScreen() {
@@ -13,7 +14,7 @@ export default function StartCaptureScreen() {
   const { t } = useTranslation();
 
   return (
-    <View className="bg-background pt-safe-offset-3 flex-1">
+    <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
       {/* oxlint-disable-next-line react/style-prop-object -- expo-status-bar's `style` is a string enum */}
       <StatusBar style="light" />
       <StepHeader
@@ -35,6 +36,6 @@ export default function StartCaptureScreen() {
           <CaptureForm />
         </ScrollView>
       </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 }

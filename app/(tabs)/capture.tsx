@@ -8,7 +8,7 @@ import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
 export default function CaptureScreen() {
   const { t } = useTranslation();
   return (
-    <SafeAreaView edges={['top']} className="bg-background flex-1">
+    <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"

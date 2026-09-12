@@ -21,7 +21,7 @@ type InfoPageProps = {
 /** Shared layout for the static settings pages (privacy, rules, help, about). */
 export function InfoPage({ title, intro, sections, footer }: InfoPageProps) {
   return (
-    <SafeAreaView edges={['top']} className="bg-background flex-1">
+    <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
       <ScreenHeader title={title} onBack={() => goBackOrReplace('/profile')} />
 
       <ScrollView

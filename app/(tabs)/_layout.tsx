@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useThemeColor } from 'heroui-native';
 import { Home, Images, Plus, Search, User } from 'lucide-react-native';
 import { Platform, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 export const unstable_settings = {
@@ -11,6 +12,7 @@ export const unstable_settings = {
 
 export default function TabLayout() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [background, backgroundSecondary, border, accent, accentForeground, muted] = useThemeColor([
     'background',
     'background-secondary',
@@ -35,7 +37,8 @@ export default function TabLayout() {
             shadowColor: 'transparent',
             shadowOpacity: 0,
             shadowRadius: 0,
-            height: Platform.OS === 'web' ? 68 : undefined,
+            height: Platform.OS === 'web' ? 68 + insets.bottom : undefined,
+            paddingBottom: Platform.OS === 'web' ? insets.bottom : undefined,
           },
           tabBarActiveTintColor: accent,
           tabBarInactiveTintColor: muted,

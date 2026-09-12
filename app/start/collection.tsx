@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { MomentFilmstrip } from '@/components/MomentFilmstrip';
 import { StepDots } from '@/components/StepDots';
 import { StepHeader } from '@/components/StepHeader';
+import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
 import { useMomentsStore } from '@/lib/momentsStore';
 import { goBackOrReplace } from '@/lib/navigation';
 
@@ -20,7 +21,7 @@ export default function StartCollectionScreen() {
   const openMoment = (id: string) => router.push({ pathname: '/moment/[id]', params: { id } });
 
   return (
-    <View className="bg-background pt-safe-offset-3 flex-1">
+    <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
       {/* oxlint-disable-next-line react/style-prop-object -- expo-status-bar's `style` is a string enum */}
       <StatusBar style="light" />
       <StepHeader
@@ -56,6 +57,6 @@ export default function StartCollectionScreen() {
           </Button>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }

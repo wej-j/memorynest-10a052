@@ -35,7 +35,7 @@ export default function ReviewScreen() {
 
   if (!enrichment) {
     return (
-      <SafeAreaView edges={['top']} className="bg-background flex-1 justify-center">
+      <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1 justify-center">
         <EmptyState
           icon={Sparkles}
           title={t('review.missingTitle')}
@@ -68,7 +68,7 @@ export default function ReviewScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top']} className="bg-background flex-1">
+    <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
       <ScreenHeader
         title={t('review.title')}
         subtitle={enrichment.usedAI ? t('review.aiSubtitle') : t('review.deviceSubtitle')}

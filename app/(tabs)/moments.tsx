@@ -20,7 +20,7 @@ export default function MomentsScreen() {
   const openMoment = (id: string) => router.push({ pathname: '/moment/[id]', params: { id } });
 
   return (
-    <SafeAreaView edges={['top']} className="bg-background flex-1">
+    <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
       <FlatList
         data={moments}
         keyExtractor={(item) => item.id}

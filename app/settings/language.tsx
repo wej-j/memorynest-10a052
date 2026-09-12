@@ -1,6 +1,6 @@
 import { Surface, Typography, useThemeColor } from 'heroui-native';
 import { Check, Languages } from 'lucide-react-native';
-import { Pressable, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -24,10 +24,13 @@ export default function LanguageScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top']} className="bg-background flex-1">
+    <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
       <ScreenHeader title={t('language.title')} onBack={() => goBackOrReplace('/profile')} />
 
-      <View className="gap-4 px-5">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32, gap: 16 }}
+      >
         <Typography.Paragraph type="body-sm" color="muted">
           {t('language.intro')}
         </Typography.Paragraph>
@@ -60,7 +63,7 @@ export default function LanguageScreen() {
             );
           })}
         </Surface>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

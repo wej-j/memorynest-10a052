@@ -36,7 +36,7 @@ export default function EditMomentScreen() {
 
   if (!moment || !value) {
     return (
-      <SafeAreaView edges={['top']} className="bg-background flex-1 justify-center">
+      <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1 justify-center">
         <EmptyState
           icon={CalendarDays}
           title="Diese Erinnerung gibt es nicht mehr."
@@ -68,7 +68,7 @@ export default function EditMomentScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top']} className="bg-background flex-1">
+    <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
       <ScreenHeader
         title="Moment bearbeiten"
         onBack={() => goBackOrReplace({ pathname: '/moment/[id]', params: { id: moment.id } })}

@@ -5,6 +5,20 @@
 
 @import 'heroui-native/styles';
 
+/* Keep the Expo web root inside the visible mobile browser viewport. */
+html,
+body,
+#root {
+  min-height: 100%;
+  min-height: 100dvh;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 /*
  * HeroUI Native + Uniwind tokens
  *

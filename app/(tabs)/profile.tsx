@@ -28,7 +28,7 @@ export default function ProfileScreen() {
   const avatar = moments.find((moment) => moment.images.length > 0)?.images[0] ?? null;
 
   return (
-    <SafeAreaView edges={['top']} className="bg-background flex-1">
+    <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, gap: 20 }}

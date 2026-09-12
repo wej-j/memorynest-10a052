@@ -53,7 +53,7 @@ export default function PhotosScreen() {
   );
 
   return (
-    <SafeAreaView edges={['top']} className="bg-background flex-1">
+    <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
       <FlatList
         data={photos}
         keyExtractor={(item) => item.key}

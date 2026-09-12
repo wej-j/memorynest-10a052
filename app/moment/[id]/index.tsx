@@ -41,7 +41,7 @@ export default function MomentDetailScreen() {
 
   if (!moment) {
     return (
-      <SafeAreaView edges={['top']} className="bg-background flex-1 justify-center">
+      <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1 justify-center">
         <EmptyState
           icon={CalendarDays}
           title="Diese Erinnerung gibt es nicht mehr."
@@ -75,7 +75,7 @@ export default function MomentDetailScreen() {
   };
 
   return (
-    <View className="bg-background flex-1">
+    <SafeAreaView edges={['bottom']} className="bg-background flex-1">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -196,7 +196,7 @@ export default function MomentDetailScreen() {
           ) : null}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

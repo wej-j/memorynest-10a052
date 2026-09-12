@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
+import { useSegments } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -51,13 +52,15 @@ function isIosSafari(): boolean {
   return isIos && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
 }
 
-const TAB_BAR_HEIGHT = 49;
+const WEB_TAB_BAR_HEIGHT = 68;
 
 export function InstallPrompt() {
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [showIosHint, setShowIosHint] = useState(false);
+  const segments = useSegments();
   const insets = useSafeAreaInsets();
-  const bottom = insets.bottom + TAB_BAR_HEIGHT + 12;
+  const tabBarHeight = segments[0] === '(tabs)' ? WEB_TAB_BAR_HEIGHT : 0;
+  const bottom = insets.bottom + tabBarHeight + 12;
 
   useEffect(() => {
     if (!isEligibleBrowserContext()) return undefined;
