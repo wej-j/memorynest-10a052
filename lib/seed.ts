@@ -18,7 +18,7 @@ function seed(input: SeedInput): Moment {
   const createdAt = new Date(`${input.date}T${input.time}:00`).toISOString();
   return {
     id: input.id,
-    image: input.assetKey ? { source: 'asset', assetKey: input.assetKey } : null,
+    images: input.assetKey ? [{ source: 'asset', assetKey: input.assetKey }] : [],
     originalNote: input.originalNote,
     title: input.title,
     description: input.description,

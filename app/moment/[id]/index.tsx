@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Share, View } from 'react-native';
 
 import { EmptyState } from '@/components/EmptyState';
-import { MomentPhoto } from '@/components/MomentPhoto';
+import { MomentGallery } from '@/components/MomentGallery';
 import { StarRating } from '@/components/StarRating';
 import { TagList } from '@/components/TagList';
 import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
@@ -81,7 +81,7 @@ export default function MomentDetailScreen() {
         contentContainerStyle={{ paddingBottom: 40 }}
       >
         <View>
-          <MomentPhoto image={moment.image} height={340} />
+          <MomentGallery images={moment.images} height={340} itemWidth={320} />
 
           <View className="pt-safe-offset-3 absolute top-0 right-0 left-0 flex-row justify-between px-4">
             <Pressable

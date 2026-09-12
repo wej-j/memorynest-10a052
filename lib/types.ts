@@ -11,7 +11,7 @@ export type MomentImage = { source: 'asset'; assetKey: string } | { source: 'fil
 
 export type Moment = {
   id: string;
-  image: MomentImage | null;
+  images: MomentImage[];
   /** Exactly what the user typed when capturing. Never rewritten. */
   originalNote: string;
   title: string;
@@ -32,7 +32,7 @@ export type Moment = {
 
 /** What the user hands us on the capture screen, before any enrichment. */
 export type MomentDraft = {
-  image: MomentImage | null;
+  images: MomentImage[];
   note: string;
   location: string | null;
   date: string;

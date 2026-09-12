@@ -21,7 +21,7 @@ export function MomentCard({ moment, onPress }: MomentCardProps) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" className="active:opacity-90">
       <Card className="border-border/60 bg-surface overflow-hidden rounded-3xl border p-0 shadow-sm">
-        {moment.image ? <MomentPhoto image={moment.image} height={196} /> : null}
+        {moment.images.length > 0 ? <MomentPhoto image={moment.images[0]} height={196} /> : null}
 
         <View className="gap-2.5 px-4 pt-3.5 pb-4">
           <View className="flex-row items-start gap-3">

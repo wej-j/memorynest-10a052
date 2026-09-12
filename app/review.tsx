@@ -6,7 +6,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 import { EmptyState } from '@/components/EmptyState';
 import { MomentFields, type MomentFieldsValue } from '@/components/MomentFields';
-import { MomentPhoto } from '@/components/MomentPhoto';
+import { MomentGallery } from '@/components/MomentGallery';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
 import { isValidDateKey, isValidTimeKey } from '@/lib/datetime';
@@ -53,7 +53,7 @@ export default function ReviewScreen() {
 
     const location = value.location.trim();
     addMoment({
-      image: draft.image,
+      images: draft.images,
       originalNote: draft.note.trim(),
       title: value.title.trim().length > 0 ? value.title.trim() : 'Moment ohne Titel',
       description: value.description.trim(),
@@ -90,13 +90,7 @@ export default function ReviewScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, gap: 20 }}
         >
-          {draft.image ? (
-            <MomentPhoto
-              image={draft.image}
-              height={240}
-              className="border-border/60 rounded-3xl border"
-            />
-          ) : null}
+          <MomentGallery images={draft.images} height={240} />
 
           <MomentFields value={value} onChange={(patch) => setValue({ ...value, ...patch })} />
 

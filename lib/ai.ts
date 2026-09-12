@@ -70,7 +70,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 const ENRICH_SYSTEM = [
   'You help someone keep a personal memory journal.',
-  'From a short note, an optional photo, a date and an optional location, write a warm but factual memory entry.',
+  'From a short note, optional photos, a date and an optional location, write a warm but factual memory entry.',
   'Always write in German, using informal "du" wording. Never answer in English.',
   'Never invent specific facts (names, prices, dishes, cities) that are not supported by the note, photo or location.',
   'If the input is thin, stay general rather than making things up.',
@@ -84,24 +84,31 @@ const ENRICH_SYSTEM = [
 
 export async function enrichMoment(
   draft: MomentDraft,
-  photoBase64: string | null,
+  photoBase64s: string[],
 ): Promise<MomentEnrichment> {
-  const fallback = enrichOffline(draft, draft.image !== null);
+  const attachedPhotos = photoBase64s.slice(0, 4);
+  const fallback = enrichOffline(draft, draft.images.length > 0);
   if (!aiEnabled) return fallback;
 
   const details = [
     `Note from the user: ${draft.note.trim() || '(none)'}`,
     `Date: ${draft.date} ${draft.time}`,
     `Location: ${draft.location ?? '(unknown)'}`,
-    photoBase64 ? 'A photo of the moment is attached.' : 'No photo was attached.',
+    attachedPhotos.length > 0
+      ? `${attachedPhotos.length} photo(s) of the moment are attached.`
+      : 'No photo was attached.',
   ].join('\n');
 
-  const userContent: ChatContent = photoBase64
-    ? [
-        { type: 'text', text: details },
-        { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${photoBase64}` } },
-      ]
-    : details;
+  const userContent: ChatContent =
+    attachedPhotos.length > 0
+      ? [
+          { type: 'text', text: details },
+          ...attachedPhotos.map((photoBase64) => ({
+            type: 'image_url' as const,
+            image_url: { url: `data:image/jpeg;base64,${photoBase64}` },
+          })),
+        ]
+      : details;
 
   try {
     const data = await requestJSON([

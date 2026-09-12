@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { MomentPhoto } from '@/components/MomentPhoto';
 import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
 import { useMomentsStore } from '@/lib/momentsStore';
+import type { MomentImage } from '@/lib/types';
 
 const FILTERS = [
   { key: 'all', label: 'Alle' },
@@ -15,6 +16,14 @@ const FILTERS = [
 ] as const;
 
 type FilterKey = (typeof FILTERS)[number]['key'];
+
+type PhotoTile = {
+  key: string;
+  momentId: string;
+  title: string;
+  image: MomentImage;
+  favorite: boolean;
+};
 
 const GUTTER = 20;
 const GAP = 12;
@@ -28,11 +37,19 @@ export default function PhotosScreen() {
   const tileWidth = Math.floor((Math.min(width, 720) - GUTTER * 2 - GAP) / 2);
   const tileHeight = Math.round(tileWidth * 1.25);
 
-  const photos = useMemo(
+  const photos = useMemo<PhotoTile[]>(
     () =>
       moments
-        .filter((moment) => moment.image !== null)
-        .filter((moment) => (filter === 'favorites' ? moment.favorite : true)),
+        .flatMap((moment) =>
+          moment.images.map((image, index) => ({
+            key: `${moment.id}-${index}`,
+            momentId: moment.id,
+            title: moment.title,
+            image,
+            favorite: moment.favorite,
+          })),
+        )
+        .filter((photo) => (filter === 'favorites' ? photo.favorite : true)),
     [filter, moments],
   );
 
@@ -40,7 +57,7 @@ export default function PhotosScreen() {
     <SafeAreaView edges={['top']} className="bg-background flex-1">
       <FlatList
         data={photos}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.key}
         numColumns={2}
         showsVerticalScrollIndicator={false}
         columnWrapperStyle={{ gap: GAP }}
@@ -84,7 +101,7 @@ export default function PhotosScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={item.title}
-            onPress={() => router.push({ pathname: '/moment/[id]', params: { id: item.id } })}
+            onPress={() => router.push({ pathname: '/moment/[id]', params: { id: item.momentId } })}
             style={{ width: tileWidth }}
             className="active:opacity-85"
           >

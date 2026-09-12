@@ -1,47 +1,41 @@
 import { useRouter } from 'expo-router';
 import {
   Button,
+  FieldError,
   Input,
   Label,
   Spinner,
-  Surface,
   TextArea,
   TextField,
   Typography,
   useThemeColor,
 } from 'heroui-native';
-import { CalendarDays, Camera, ImagePlus, MapPin, Trash2 } from 'lucide-react-native';
+import { Camera, ImagePlus, MapPin } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
-import { MomentPhoto } from '@/components/MomentPhoto';
+import { MomentGallery } from '@/components/MomentGallery';
 import { ProcessingState } from '@/components/ProcessingState';
 import { aiEnabled, enrichMoment } from '@/lib/ai';
-import { formatCardDate, toDateKey, toTimeKey } from '@/lib/datetime';
+import { isValidDateKey, isValidTimeKey } from '@/lib/datetime';
 import { useDraftStore } from '@/lib/draftStore';
 import { suggestCurrentLocation } from '@/lib/geo';
-import { cameraAvailable, pickPhotoFromLibrary, takePhotoWithCamera } from '@/lib/photos';
+import { cameraAvailable, pickPhotosFromLibrary, takePhotoWithCamera } from '@/lib/photos';
 
-/**
- * The capture form: photo, a few words, an optional place. Used both by the
- * "Neu" tab and by the second page of the start pager. Nothing is required.
- */
+const MAX_PHOTOS = 10;
+
+/** Shared form for capturing a new memory. */
 export function CaptureForm() {
   const router = useRouter();
-  const { draft, setImage, setNote, setLocation, setDateTime, setEnrichment } = useDraftStore();
-  const [, accentSoftForeground, muted] = useThemeColor([
-    'accent-foreground',
-    'accent-soft-foreground',
-    'muted',
-  ]);
+  const { draft, setImages, setNote, setLocation, setDateTime, setEnrichment } = useDraftStore();
+  const [accentSoftForeground, muted] = useThemeColor(['accent-soft-foreground', 'muted']);
 
   const [busy, setBusy] = useState<'camera' | 'library' | 'location' | null>(null);
   const [processing, setProcessing] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
-  const photoBase64 = useRef<string | null>(null);
+  const photoBase64s = useRef<(string | null)[]>([]);
   const askedForLocation = useRef(false);
 
-  // Offer the current place once, only for a fresh draft. Never blocks capture.
   useEffect(() => {
     if (askedForLocation.current) return undefined;
     askedForLocation.current = true;
@@ -56,42 +50,61 @@ export function CaptureForm() {
     };
   }, [draft.location, draft.note, setLocation]);
 
-  const capture = async (mode: 'camera' | 'library') => {
+  const addPhotos = async (mode: 'camera' | 'library') => {
     setBusy(mode);
     setHint(null);
+
     try {
-      const photo = mode === 'camera' ? await takePhotoWithCamera() : await pickPhotoFromLibrary();
-      if (photo) {
-        setImage(photo.image);
-        photoBase64.current = photo.base64;
+      const photos =
+        mode === 'camera'
+          ? [await takePhotoWithCamera()].filter((photo) => photo !== null)
+          : await pickPhotosFromLibrary();
+      const availableSlots = Math.max(0, MAX_PHOTOS - draft.images.length);
+      const accepted = photos.slice(0, availableSlots);
+
+      if (accepted.length > 0) {
+        setImages([...draft.images, ...accepted.map((photo) => photo.image)]);
+        photoBase64s.current = [...photoBase64s.current, ...accepted.map((photo) => photo.base64)];
+      }
+
+      if (photos.length > availableSlots) {
+        setHint(`Du kannst bis zu ${MAX_PHOTOS} Fotos zu einem Moment hinzufügen.`);
       }
     } catch {
-      setHint('Dieses Foto ließ sich nicht verwenden. Versuch ein anderes.');
+      setHint('Diese Fotos ließen sich nicht verwenden. Versuch es mit anderen Fotos.');
     } finally {
       setBusy(null);
     }
   };
 
+  const removePhoto = (index: number) => {
+    setImages(draft.images.filter((_, imageIndex) => imageIndex !== index));
+    photoBase64s.current = photoBase64s.current.filter((_, imageIndex) => imageIndex !== index);
+  };
+
   const findLocation = async () => {
     setBusy('location');
+    setHint(null);
     const place = await suggestCurrentLocation();
     setBusy(null);
     if (place) setLocation(place);
     else setHint('Der Ort ist gerade nicht verfügbar — du kannst ihn auch eintippen.');
   };
 
-  const canCreate = draft.note.trim().length > 0 || draft.image !== null;
+  const dateInvalid = !isValidDateKey(draft.date);
+  const timeInvalid = !isValidTimeKey(draft.time);
+  const canCreate =
+    (draft.note.trim().length > 0 || draft.images.length > 0) && !dateInvalid && !timeInvalid;
 
   const create = async () => {
     if (!canCreate) return;
     setProcessing(true);
 
-    const now = new Date();
-    const fresh = { ...draft, date: toDateKey(now), time: toTimeKey(now) };
-    setDateTime(fresh.date, fresh.time);
-
-    const enrichment = await enrichMoment(fresh, photoBase64.current);
-    if (enrichment.suggestedLocation && !fresh.location) {
+    const enrichment = await enrichMoment(
+      draft,
+      photoBase64s.current.filter((value): value is string => value !== null),
+    );
+    if (enrichment.suggestedLocation && !draft.location) {
       setLocation(enrichment.suggestedLocation);
     }
     setEnrichment(enrichment);
@@ -102,82 +115,49 @@ export function CaptureForm() {
   if (processing) return <ProcessingState />;
 
   return (
-    <View className="gap-4">
-      {draft.image ? (
-        <MomentPhoto
-          image={draft.image}
-          height={240}
-          className="border-border/70 rounded-3xl border"
-        />
-      ) : (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Foto hinzufügen"
-          onPress={() => void capture('library')}
-          disabled={busy !== null}
-          className="border-border/70 bg-surface h-44 items-center justify-center gap-2 rounded-3xl border active:opacity-80"
-        >
-          {busy === 'library' ? (
-            <Spinner size="lg" />
-          ) : (
-            <View className="bg-accent-soft h-14 w-14 items-center justify-center rounded-full">
-              <Camera size={24} color={accentSoftForeground} />
-            </View>
-          )}
-          <Typography.Paragraph type="body-sm" color="muted">
-            Foto hinzufügen
-          </Typography.Paragraph>
-        </Pressable>
-      )}
-
+    <View className="gap-5">
       <View className="flex-row gap-3">
         {cameraAvailable ? (
           <Button
             variant="secondary"
             className="flex-1"
-            onPress={() => void capture('camera')}
-            isDisabled={busy !== null}
+            onPress={() => void addPhotos('camera')}
+            isDisabled={busy !== null || draft.images.length >= MAX_PHOTOS}
           >
             {busy === 'camera' ? (
               <Spinner size="sm" />
             ) : (
               <Camera size={18} color={accentSoftForeground} />
             )}
-            <Button.Label>Kamera</Button.Label>
+            <Button.Label>Foto aufnehmen</Button.Label>
           </Button>
         ) : null}
 
         <Button
           variant="secondary"
           className="flex-1"
-          onPress={() => void capture('library')}
-          isDisabled={busy !== null}
+          onPress={() => void addPhotos('library')}
+          isDisabled={busy !== null || draft.images.length >= MAX_PHOTOS}
         >
           {busy === 'library' ? (
             <Spinner size="sm" />
           ) : (
             <ImagePlus size={18} color={accentSoftForeground} />
           )}
-          <Button.Label>{draft.image ? 'Foto ändern' : 'Galerie'}</Button.Label>
+          <Button.Label>Fotos hinzufügen</Button.Label>
         </Button>
-
-        {draft.image ? (
-          <Button
-            variant="ghost"
-            isIconOnly
-            accessibilityLabel="Foto entfernen"
-            onPress={() => {
-              setImage(null);
-              photoBase64.current = null;
-            }}
-          >
-            <Trash2 size={18} color={muted} />
-          </Button>
-        ) : null}
       </View>
 
+      <MomentGallery images={draft.images} height={180} itemWidth={230} onRemove={removePhoto} />
+
+      {draft.images.length > 0 ? (
+        <Typography.Paragraph type="body-xs" color="muted">
+          {`${draft.images.length} ${draft.images.length === 1 ? 'Foto ausgewählt' : 'Fotos ausgewählt'}`}
+        </Typography.Paragraph>
+      ) : null}
+
       <TextField>
-        <Label>Was möchtest du behalten?</Label>
+        <Label>Woran möchtest du dich erinnern?</Label>
         <TextArea
           value={draft.note}
           onChangeText={setNote}
@@ -187,7 +167,19 @@ export function CaptureForm() {
       </TextField>
 
       <TextField>
-        <Label>Ort (optional)</Label>
+        <View className="flex-row items-center justify-between">
+          <Label>Ort</Label>
+          <Button
+            variant="tertiary"
+            size="sm"
+            isIconOnly
+            accessibilityLabel="Aktuellen Ort verwenden"
+            onPress={() => void findLocation()}
+            isDisabled={busy !== null}
+          >
+            {busy === 'location' ? <Spinner size="sm" /> : <MapPin size={18} color={muted} />}
+          </Button>
+        </View>
         <Input
           value={draft.location ?? ''}
           onChangeText={(value) => setLocation(value.length > 0 ? value : null)}
@@ -195,26 +187,29 @@ export function CaptureForm() {
         />
       </TextField>
 
-      <Button
-        variant="tertiary"
-        size="sm"
-        className="self-start"
-        onPress={() => void findLocation()}
-        isDisabled={busy !== null}
-      >
-        {busy === 'location' ? <Spinner size="sm" /> : <MapPin size={16} color={muted} />}
-        <Button.Label>Aktuellen Ort verwenden</Button.Label>
-      </Button>
+      <View className="flex-row gap-3">
+        <TextField className="flex-1" isInvalid={dateInvalid}>
+          <Label>Datum</Label>
+          <Input
+            value={draft.date}
+            onChangeText={(date) => setDateTime(date, draft.time)}
+            placeholder="2026-09-12"
+            autoCapitalize="none"
+          />
+          <FieldError>Format: 2026-09-12</FieldError>
+        </TextField>
 
-      <Surface variant="secondary" className="flex-row items-center gap-3 rounded-2xl px-4 py-3.5">
-        <CalendarDays size={18} color={muted} />
-        <View className="flex-1">
-          <Typography.Paragraph type="body-sm">Datum &amp; Uhrzeit</Typography.Paragraph>
-          <Typography.Paragraph type="body-xs" color="muted">
-            {`Automatisch · ${formatCardDate(draft)}`}
-          </Typography.Paragraph>
-        </View>
-      </Surface>
+        <TextField className="w-28" isInvalid={timeInvalid}>
+          <Label>Uhrzeit</Label>
+          <Input
+            value={draft.time}
+            onChangeText={(time) => setDateTime(draft.date, time)}
+            placeholder="16:40"
+            autoCapitalize="none"
+          />
+          <FieldError>Format: 16:40</FieldError>
+        </TextField>
+      </View>
 
       {hint ? (
         <Typography.Paragraph type="body-sm" color="muted">

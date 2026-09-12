@@ -15,15 +15,17 @@ export function MomentFilmstrip({ moments, onSelect }: MomentFilmstripProps) {
     const result: ReelFrame[] = [];
 
     for (const moment of moments) {
-      const source = resolveMomentImage(moment.image);
-      if (!source) continue;
-      result.push({
-        key: moment.id,
-        source,
-        label: moment.title,
-        onPress: () => onSelect(moment.id),
-      });
-      if (result.length === 12) break;
+      for (const [index, image] of moment.images.entries()) {
+        const source = resolveMomentImage(image);
+        if (!source) continue;
+        result.push({
+          key: `${moment.id}-${index}`,
+          source,
+          label: moment.title,
+          onPress: () => onSelect(moment.id),
+        });
+        if (result.length === 12) return result;
+      }
     }
 
     return result;

@@ -6,7 +6,7 @@ import type { MomentDraft, MomentEnrichment, MomentImage } from '@/lib/types';
 type DraftState = {
   draft: MomentDraft;
   enrichment: MomentEnrichment | null;
-  setImage: (image: MomentImage | null) => void;
+  setImages: (images: MomentImage[]) => void;
   setNote: (note: string) => void;
   setLocation: (location: string | null) => void;
   setDateTime: (date: string, time: string) => void;
@@ -17,7 +17,7 @@ type DraftState = {
 function emptyDraft(): MomentDraft {
   const now = new Date();
   return {
-    image: null,
+    images: [],
     note: '',
     location: null,
     date: toDateKey(now),
@@ -33,7 +33,7 @@ export const useDraftStore = create<DraftState>()((set) => ({
   draft: emptyDraft(),
   enrichment: null,
 
-  setImage: (image) => set((state) => ({ draft: { ...state.draft, image } })),
+  setImages: (images) => set((state) => ({ draft: { ...state.draft, images } })),
   setNote: (note) => set((state) => ({ draft: { ...state.draft, note } })),
   setLocation: (location) => set((state) => ({ draft: { ...state.draft, location } })),
   setDateTime: (date, time) => set((state) => ({ draft: { ...state.draft, date, time } })),

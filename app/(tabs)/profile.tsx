@@ -23,7 +23,7 @@ export default function ProfileScreen() {
   const [accent] = useThemeColor(['accent']);
 
   const favorites = moments.filter((moment) => moment.favorite).length;
-  const avatar = moments.find((moment) => moment.image !== null)?.image ?? null;
+  const avatar = moments.find((moment) => moment.images.length > 0)?.images[0] ?? null;
 
   return (
     <SafeAreaView edges={['top']} className="bg-background flex-1">

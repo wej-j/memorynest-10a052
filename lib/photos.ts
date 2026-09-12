@@ -35,7 +35,10 @@ async function processAsset(uri: string): Promise<CapturedPhoto> {
     const directory = new Directory(Paths.document, 'moments');
     if (!directory.exists) directory.create({ intermediates: true });
 
-    const target = new File(directory, `moment-${Date.now()}.jpg`);
+    const target = new File(
+      directory,
+      `moment-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`,
+    );
     await new File(resized.uri).copy(target);
     return { image: { source: 'file', uri: target.uri }, base64 };
   } catch {
@@ -44,18 +47,19 @@ async function processAsset(uri: string): Promise<CapturedPhoto> {
   }
 }
 
-export async function pickPhotoFromLibrary(): Promise<CapturedPhoto | null> {
+export async function pickPhotosFromLibrary(): Promise<CapturedPhoto[]> {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permission.granted) return null;
+  if (!permission.granted) return [];
 
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
     quality: 0.9,
+    allowsMultipleSelection: true,
+    selectionLimit: 10,
   });
-  const asset = result.canceled ? null : result.assets[0];
-  if (!asset) return null;
+  if (result.canceled) return [];
 
-  return processAsset(asset.uri);
+  return Promise.all(result.assets.map((asset) => processAsset(asset.uri)));
 }
 
 export async function takePhotoWithCamera(): Promise<CapturedPhoto | null> {
