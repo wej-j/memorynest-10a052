@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
-import { getAppLanguage, setAppLanguage, type AppLanguage } from '@/lib/i18n';
+import { setAppLanguage, type AppLanguage } from '@/lib/i18n';
 import { goBackOrReplace } from '@/lib/navigation';
 
 const LANGUAGE_OPTIONS: { code: AppLanguage; labelKey: 'language.german' | 'language.english' }[] =
@@ -15,9 +15,9 @@ const LANGUAGE_OPTIONS: { code: AppLanguage; labelKey: 'language.german' | 'lang
   ];
 
 export default function LanguageScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [accent, foreground] = useThemeColor(['accent', 'foreground']);
-  const activeLanguage = getAppLanguage();
+  const activeLanguage: AppLanguage = i18n.resolvedLanguage === 'en' ? 'en' : 'de';
 
   const selectLanguage = (language: AppLanguage) => {
     if (language !== activeLanguage) void setAppLanguage(language);
