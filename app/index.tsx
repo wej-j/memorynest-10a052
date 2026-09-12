@@ -1,12 +1,12 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Button, Typography, useThemeColor } from 'heroui-native';
-import { ArrowRight } from 'lucide-react-native';
-import { useMemo } from 'react';
-import { useWindowDimensions, View } from 'react-native';
+import { Typography, useThemeColor } from 'heroui-native';
+import { ChevronUp } from 'lucide-react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { PanResponder, useWindowDimensions, View } from 'react-native';
 
-import { BrandWordmark } from '@/components/BrandWordmark';
+import { BrandLogo } from '@/components/BrandLogo';
 import { FilmReel, type ReelFrame } from '@/components/FilmReel';
 import { StepDots } from '@/components/StepDots';
 import { LinearGradient } from '@/components/ui/primitives/LinearGradient';
@@ -17,12 +17,31 @@ const HERO = require('@/assets/brand/start-hero.png');
 
 /**
  * Start page (step 1 of 3): brand, tagline and the moving film reel.
- * "Los geht's" continues to the add-memory page.
+ * Swipe upward to continue to the add-memory page.
  */
 export default function StartScreen() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
-  const [accentForeground] = useThemeColor(['accent-foreground']);
+  const [foreground] = useThemeColor(['foreground']);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  const openCapture = useCallback(() => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+    router.push('/start/capture');
+  }, [isNavigating, router]);
+
+  const swipeResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gesture) =>
+          gesture.dy < -12 && Math.abs(gesture.dy) > Math.abs(gesture.dx),
+        onPanResponderRelease: (_, gesture) => {
+          if (gesture.dy < -55 || gesture.vy < -0.5) openCapture();
+        },
+      }),
+    [openCapture],
+  );
 
   // A fresh set of random web photos per app start, plus the bundled
   // photography so the reel is never empty when the device is offline.
@@ -36,7 +55,12 @@ export default function StartScreen() {
   }, []);
 
   return (
-    <View className="bg-background flex-1">
+    <View
+      className="bg-background flex-1"
+      accessibilityActions={[{ name: 'activate', label: 'Zum Foto hinzufügen' }]}
+      onAccessibilityAction={openCapture}
+      {...swipeResponder.panHandlers}
+    >
       {/* oxlint-disable-next-line react/style-prop-object -- expo-status-bar's `style` is a string enum */}
       <StatusBar style="light" />
 
@@ -49,7 +73,12 @@ export default function StartScreen() {
       />
 
       <View className="pt-safe-offset-8 pb-safe-offset-6 flex-1 items-center px-6">
-        <BrandWordmark size={40} />
+        <View className="items-center">
+          <BrandLogo size={68} />
+          <Typography.Heading type="h2" align="center" className="mt-2">
+            Remory
+          </Typography.Heading>
+        </View>
 
         <Typography.Paragraph type="body-sm" color="muted" align="center" className="mt-2 max-w-64">
           Remember the moments that matter.
@@ -68,19 +97,14 @@ export default function StartScreen() {
 
         <View className="flex-1" />
 
-        <View className="pb-5">
-          <StepDots index={0} />
+        <View className="items-center gap-1 pb-3">
+          <ChevronUp size={26} color={foreground} strokeWidth={1.8} />
+          <Typography.Paragraph type="body-sm" color="muted" align="center">
+            Nach oben wischen, um ein Foto hinzuzufügen
+          </Typography.Paragraph>
         </View>
 
-        <Button
-          variant="primary"
-          size="lg"
-          className="w-full max-w-xs"
-          onPress={() => router.push('/start/capture')}
-        >
-          <Button.Label>Los geht&apos;s</Button.Label>
-          <ArrowRight size={18} color={accentForeground} />
-        </Button>
+        <StepDots index={0} />
       </View>
     </View>
   );

@@ -64,7 +64,7 @@ function AppStack() {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen name="start/capture" />
+      <Stack.Screen name="start/capture" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="start/collection" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="review" />
