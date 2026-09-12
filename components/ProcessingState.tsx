@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 const STEPS = [
-  'Understanding your note...',
-  'Looking at your photo...',
-  'Finding useful details...',
-  'Creating tags...',
+  'Deine Notiz verstehen ...',
+  'Das Foto anschauen ...',
+  'Nützliche Details finden ...',
+  'Stichwörter erstellen ...',
 ];
 
 type ProcessingStateProps = {
@@ -14,7 +14,9 @@ type ProcessingStateProps = {
 };
 
 /** Shown while a moment is being enriched. Rotates through reassuring steps. */
-export function ProcessingState({ title = 'Remembering this moment...' }: ProcessingStateProps) {
+export function ProcessingState({
+  title = 'Ich merke mir diesen Moment ...',
+}: ProcessingStateProps) {
   const [step, setStep] = useState(0);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, useThemeColor } from 'heroui-native';
-import { Check, SearchX } from 'lucide-react-native';
+import { CalendarDays, Check } from 'lucide-react-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
@@ -13,8 +13,6 @@ import { isValidDateKey, isValidTimeKey } from '@/lib/datetime';
 import { useMoment, useMomentsStore } from '@/lib/momentsStore';
 import { goBackOrReplace } from '@/lib/navigation';
 
-const back = () => goBackOrReplace('/');
-
 export default function EditMomentScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,47 +20,60 @@ export default function EditMomentScreen() {
   const updateMoment = useMomentsStore((state) => state.updateMoment);
   const [accentForeground] = useThemeColor(['accent-foreground']);
 
-  const [value, setValue] = useState<MomentFieldsValue>(() => ({
-    title: moment?.title ?? '',
-    description: moment?.description ?? '',
-    date: moment?.date ?? '',
-    time: moment?.time ?? '',
-    location: moment?.location ?? '',
-    tags: moment?.tags ?? [],
-  }));
+  const [value, setValue] = useState<MomentFieldsValue | null>(() =>
+    moment
+      ? {
+          title: moment.title,
+          description: moment.description,
+          date: moment.date,
+          time: moment.time,
+          location: moment.location ?? '',
+          tags: moment.tags,
+          rating: moment.rating,
+        }
+      : null,
+  );
 
-  if (!moment) {
+  if (!moment || !value) {
     return (
-      <SafeAreaView edges={['top']} className="bg-background flex-1">
-        <ScreenHeader title="Edit moment" onBack={back} />
+      <SafeAreaView edges={['top']} className="bg-background flex-1 justify-center">
         <EmptyState
-          icon={SearchX}
-          title="This memory is no longer here."
-          body="It may have been deleted."
-          actionLabel="Back to moments"
-          onAction={() => router.replace('/')}
+          icon={CalendarDays}
+          title="Diese Erinnerung gibt es nicht mehr."
+          body="Vielleicht wurde sie gelöscht. Deine anderen Momente sind noch da."
+          actionLabel="Zu meinen Momenten"
+          onAction={() => router.replace('/moments')}
         />
       </SafeAreaView>
     );
   }
 
-  const save = () => {
-    const location = value.location.trim();
+  const canSave = isValidDateKey(value.date) && isValidTimeKey(value.time);
 
+  const save = () => {
+    if (!canSave) return;
+
+    const location = value.location.trim();
     updateMoment(moment.id, {
-      title: value.title.trim().length > 0 ? value.title.trim() : moment.title,
+      title: value.title.trim().length > 0 ? value.title.trim() : 'Moment ohne Titel',
       description: value.description.trim(),
-      tags: value.tags,
-      date: isValidDateKey(value.date) ? value.date : moment.date,
-      time: isValidTimeKey(value.time) ? value.time : moment.time,
+      date: value.date,
+      time: value.time,
       location: location.length > 0 ? location : null,
+      tags: value.tags,
+      rating: value.rating,
     });
 
-    back();
+    goBackOrReplace({ pathname: '/moment/[id]', params: { id: moment.id } });
   };
 
   return (
     <SafeAreaView edges={['top']} className="bg-background flex-1">
+      <ScreenHeader
+        title="Moment bearbeiten"
+        onBack={() => goBackOrReplace({ pathname: '/moment/[id]', params: { id: moment.id } })}
+      />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
@@ -70,27 +81,31 @@ export default function EditMomentScreen() {
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, gap: 20 }}
         >
-          <ScreenHeader title="Edit moment" onBack={back} />
-
-          <View className="gap-5 px-5 pt-2">
-            {moment.image ? (
-              <MomentPhoto
-                image={moment.image}
-                height={200}
-                className="border-border rounded-3xl border"
-              />
-            ) : null}
-
-            <MomentFields
-              value={value}
-              onChange={(patch) => setValue((current) => ({ ...current, ...patch }))}
+          {moment.image ? (
+            <MomentPhoto
+              image={moment.image}
+              height={200}
+              className="border-border/60 rounded-3xl border"
             />
+          ) : null}
 
-            <Button variant="primary" size="lg" onPress={save}>
+          <MomentFields value={value} onChange={(patch) => setValue({ ...value, ...patch })} />
+
+          <View className="gap-3">
+            <Button variant="primary" size="lg" onPress={save} isDisabled={!canSave}>
               <Check size={18} color={accentForeground} />
-              <Button.Label>Save changes</Button.Label>
+              <Button.Label>Änderungen speichern</Button.Label>
+            </Button>
+
+            <Button
+              variant="tertiary"
+              onPress={() =>
+                goBackOrReplace({ pathname: '/moment/[id]', params: { id: moment.id } })
+              }
+            >
+              <Button.Label>Abbrechen</Button.Label>
             </Button>
           </View>
         </ScrollView>

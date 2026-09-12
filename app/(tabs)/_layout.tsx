@@ -1,12 +1,17 @@
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useThemeColor } from 'heroui-native';
-import { Plus, Search, Sparkles } from 'lucide-react-native';
+import { Home, Images, Plus, Search, User } from 'lucide-react-native';
 import { Platform, View } from 'react-native';
 
+export const unstable_settings = {
+  initialRouteName: 'moments',
+};
+
 export default function TabLayout() {
-  const [background, border, accent, accentForeground, muted] = useThemeColor([
+  const [background, backgroundSecondary, border, accent, accentForeground, muted] = useThemeColor([
     'background',
+    'background-secondary',
     'border',
     'accent',
     'accent-foreground',
@@ -16,14 +21,18 @@ export default function TabLayout() {
   return (
     <>
       {/* oxlint-disable-next-line react/style-prop-object -- expo-status-bar's `style` is a string enum ('dark' | 'light' | 'auto'), not a React Native style object */}
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Tabs
         screenOptions={{
           headerShown: false,
           sceneStyle: { backgroundColor: background },
           tabBarStyle: {
-            backgroundColor: background,
+            backgroundColor: backgroundSecondary,
             borderTopColor: border,
+            elevation: 0,
+            shadowColor: 'transparent',
+            shadowOpacity: 0,
+            shadowRadius: 0,
             height: Platform.OS === 'web' ? 68 : undefined,
           },
           tabBarActiveTintColor: accent,
@@ -32,17 +41,25 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen
-          name="index"
+          name="moments"
           options={{
-            title: 'Moments',
-            tabBarIcon: ({ color, size }) => <Sparkles color={color} size={size ?? 22} />,
+            title: 'Home',
+            tabBarIcon: ({ color, size }) => <Home color={color} size={size ?? 22} />,
+          }}
+        />
+
+        <Tabs.Screen
+          name="photos"
+          options={{
+            title: 'Fotos',
+            tabBarIcon: ({ color, size }) => <Images color={color} size={size ?? 22} />,
           }}
         />
 
         <Tabs.Screen
           name="capture"
           options={{
-            title: 'Add',
+            title: 'Neu',
             tabBarLabel: () => null,
             tabBarIcon: () => (
               <View
@@ -58,8 +75,16 @@ export default function TabLayout() {
         <Tabs.Screen
           name="search"
           options={{
-            title: 'Search',
+            title: 'Suche',
             tabBarIcon: ({ color, size }) => <Search color={color} size={size ?? 22} />,
+          }}
+        />
+
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profil',
+            tabBarIcon: ({ color, size }) => <User color={color} size={size ?? 22} />,
           }}
         />
       </Tabs>

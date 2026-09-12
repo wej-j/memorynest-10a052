@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { de } from 'date-fns/locale';
 
 import { momentDateTime } from '@/lib/datetime';
 import type { Moment, MomentDraft, MomentEnrichment } from '@/lib/types';
@@ -29,6 +30,26 @@ const TAG_RULES: { match: RegExp; tags: string[] }[] = [
   { match: /\b(rain|rainy|storm|snow)\b/i, tags: ['weather'] },
   { match: /\b(book|books|bookshop|reading)\b/i, tags: ['books'] },
   { match: /\b(dog|cat|puppy|kitten)\b/i, tags: ['animals'] },
+
+  // Deutsch. Kein \b, weil Umlaute keine ASCII-Wortzeichen sind.
+  { match: /(eisdiele|gelato|\beis\b)/i, tags: ['Eis', 'Essen'] },
+  { match: /(kaffee|espresso|cappuccino|caf[eé])/i, tags: ['Kaffee', 'Café'] },
+  { match: /(frühstück|brunch)/i, tags: ['Frühstück', 'Essen'] },
+  { match: /(abendessen|mittagessen|restaurant|pasta|pizza|tapas|nudeln|essen)/i, tags: ['Essen'] },
+  { match: /(kuchen|bäckerei|backen|brot|dessert)/i, tags: ['Backen', 'Essen'] },
+  { match: /(museum|galerie|ausstellung|theater|konzert)/i, tags: ['Kultur'] },
+  { match: /(burg|schloss|ruine|kathedrale|kirche|\bdom\b)/i, tags: ['Geschichte'] },
+  { match: /(strand|meer|küste|schwimmen)/i, tags: ['Strand', 'Natur'] },
+  { match: /(sonnenuntergang|sonnenaufgang)/i, tags: ['Sonnenuntergang'] },
+  { match: /(wandern|wanderung|berg|wald|fluss|\bsee\b)/i, tags: ['Natur'] },
+  { match: /(markt|einkaufen|blumen)/i, tags: ['Markt'] },
+  { match: /(flughafen|hotel|reise|urlaub|ausflug|\bzug\b)/i, tags: ['Reise'] },
+  { match: /(familie|mama|papa|\boma\b|\bopa\b|schwester|bruder)/i, tags: ['Familie'] },
+  { match: /(freunde|party|geburtstag|hochzeit|feier)/i, tags: ['Freunde'] },
+  { match: /(spaziergang|spazieren|bummeln)/i, tags: ['Spaziergang'] },
+  { match: /(regen|sturm|schnee|gewitter)/i, tags: ['Wetter'] },
+  { match: /(buchladen|bücher|\bbuch\b|lesen)/i, tags: ['Bücher'] },
+  { match: /(\bhund\b|katze|welpe)/i, tags: ['Tiere'] },
 ];
 
 const SMALL_WORDS = new Set([
@@ -47,6 +68,35 @@ const SMALL_WORDS = new Set([
   'after',
   'before',
   'from',
+  // Deutsch
+  'am',
+  'an',
+  'auf',
+  'aus',
+  'bei',
+  'das',
+  'dem',
+  'den',
+  'der',
+  'des',
+  'die',
+  'ein',
+  'eine',
+  'einem',
+  'einen',
+  'einer',
+  'für',
+  'im',
+  'in',
+  'mit',
+  'nach',
+  'und',
+  'vom',
+  'von',
+  'vor',
+  'zu',
+  'zum',
+  'zur',
 ]);
 
 function titleCase(value: string): string {
@@ -70,11 +120,11 @@ function locationParts(location: string | null): string[] {
 
 function timeOfDay(time: string): string {
   const hour = Number.parseInt(time.slice(0, 2), 10);
-  if (Number.isNaN(hour)) return 'Moment';
-  if (hour < 11) return 'Morning';
-  if (hour < 15) return 'Afternoon';
-  if (hour < 19) return 'Late Afternoon';
-  return 'Evening';
+  if (Number.isNaN(hour)) return 'Tag';
+  if (hour < 11) return 'Morgen';
+  if (hour < 15) return 'Mittag';
+  if (hour < 19) return 'Nachmittag';
+  return 'Abend';
 }
 
 function uniqueTags(tags: string[], limit = 6): string[] {
@@ -117,7 +167,7 @@ export function enrichOffline(draft: MomentDraft, photoPresent: boolean): Moment
   } else if (places.length > 0) {
     title = `${timeOfDay(draft.time)} in ${places[0]}`;
   } else {
-    title = `${timeOfDay(draft.time)} Worth Keeping`;
+    title = `Moment am ${timeOfDay(draft.time)}`;
   }
 
   const sentences: string[] = [];
@@ -125,14 +175,18 @@ export function enrichOffline(draft: MomentDraft, photoPresent: boolean): Moment
     const first = note.charAt(0).toUpperCase() + note.slice(1);
     sentences.push(/[.!?]$/.test(first) ? first : `${first}.`);
   } else if (photoPresent) {
-    sentences.push('A photo saved without words.');
+    sentences.push('Ein Foto, ohne Worte gespeichert.');
   } else {
-    sentences.push('A moment saved for later.');
+    sentences.push('Ein Moment, für später gespeichert.');
   }
 
-  const dateLabel = format(momentDateTime({ date: draft.date, time: draft.time }), 'd MMMM yyyy');
+  const dateLabel = format(momentDateTime({ date: draft.date, time: draft.time }), 'd. MMMM yyyy', {
+    locale: de,
+  });
   sentences.push(
-    draft.location ? `Saved in ${draft.location} on ${dateLabel}.` : `Saved on ${dateLabel}.`,
+    draft.location
+      ? `Festgehalten in ${draft.location} am ${dateLabel}.`
+      : `Festgehalten am ${dateLabel}.`,
   );
 
   return {
@@ -239,6 +293,87 @@ const STOP_WORDS = new Set([
   'with',
   'you',
   'your',
+  // Deutsch
+  'aber',
+  'alle',
+  'als',
+  'also',
+  'auch',
+  'auf',
+  'aus',
+  'bei',
+  'bin',
+  'bis',
+  'dann',
+  'das',
+  'dass',
+  'dein',
+  'deine',
+  'dem',
+  'den',
+  'der',
+  'des',
+  'die',
+  'diese',
+  'doch',
+  'dort',
+  'ein',
+  'eine',
+  'einem',
+  'einen',
+  'einer',
+  'erinnerung',
+  'erinnerungen',
+  'etwas',
+  'für',
+  'ganz',
+  'gut',
+  'gute',
+  'guten',
+  'habe',
+  'haben',
+  'hatte',
+  'ich',
+  'ihr',
+  'immer',
+  'ist',
+  'jetzt',
+  'kann',
+  'mal',
+  'man',
+  'mehr',
+  'mein',
+  'meine',
+  'mich',
+  'mir',
+  'mit',
+  'nach',
+  'nicht',
+  'noch',
+  'nur',
+  'oder',
+  'ohne',
+  'schon',
+  'sehr',
+  'sich',
+  'sie',
+  'sind',
+  'über',
+  'uns',
+  'unser',
+  'unsere',
+  'von',
+  'vor',
+  'wann',
+  'war',
+  'waren',
+  'was',
+  'welche',
+  'wieder',
+  'zeig',
+  'zeige',
+  'zum',
+  'zur',
 ]);
 
 /** Phrase-level expansion so everyday wording finds the stored wording. */
@@ -253,6 +388,20 @@ const PHRASE_EXPANSIONS: { match: RegExp; add: string }[] = [
   { match: /\bflower|flowers\b/i, add: 'market flowers' },
   { match: /\bbook|books|reading\b/i, add: 'books rain' },
   { match: /\bpasta|noodles\b/i, add: 'pasta cooking food' },
+
+  // Deutsch: Alltagswörter auf die gespeicherten Tags mappen.
+  { match: /(eis|gelato)/i, add: 'Eis Gelato Dessert Essen' },
+  { match: /(kaffee|caf[eé]|espresso)/i, add: 'Kaffee Café Frühstück' },
+  { match: /(essen|gegessen|restaurant|abendessen|mittagessen)/i, add: 'Essen Restaurant' },
+  { match: /(meer|küste|strand)/i, add: 'Strand Sonnenuntergang Meer' },
+  { match: /(burg|schloss|festung)/i, add: 'Burg Geschichte' },
+  { match: /(blume|blumen)/i, add: 'Markt Blumen' },
+  { match: /(buch|bücher|lesen)/i, add: 'Bücher Regen' },
+  { match: /(pasta|nudeln)/i, add: 'Pasta Kochen Essen' },
+  { match: /(kuchen|backen|gebacken)/i, add: 'Backen Familie Essen' },
+  { match: /(museum|ausstellung)/i, add: 'Museum Kultur' },
+  { match: /(reise|urlaub|unterwegs)/i, add: 'Reise' },
+  { match: /(natur|wandern|berge)/i, add: 'Natur' },
 ];
 
 function tokenize(value: string): string[] {
@@ -270,7 +419,7 @@ function momentHaystacks(moment: Moment) {
     title: moment.title.toLowerCase(),
     body: `${moment.description} ${moment.originalNote}`.toLowerCase(),
     place: (moment.location ?? '').toLowerCase(),
-    when: format(date, 'MMMM yyyy EEEE').toLowerCase(),
+    when: format(date, 'MMMM yyyy EEEE', { locale: de }).toLowerCase(),
   };
 }
 

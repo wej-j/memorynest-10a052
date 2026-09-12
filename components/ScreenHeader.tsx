@@ -23,7 +23,7 @@ export function ScreenHeader({ title, subtitle, onBack, action }: ScreenHeaderPr
             size="sm"
             isIconOnly
             onPress={onBack}
-            accessibilityLabel="Go back"
+            accessibilityLabel="Zurück"
             className="-ml-2"
           >
             <ChevronLeft size={22} color={foreground} />

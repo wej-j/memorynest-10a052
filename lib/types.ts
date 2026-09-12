@@ -1,5 +1,5 @@
 /**
- * Core domain types for Collecting Moments.
+ * Core domain types for Remory.
  *
  * A Moment is intentionally forgiving: only `id`, `createdAt` and `updatedAt`
  * are guaranteed. Everything else can be empty because capturing must never
@@ -22,6 +22,10 @@ export type Moment = {
   /** Wall-clock time, `HH:mm`. */
   time: string;
   location: string | null;
+  /** Heart on the card. */
+  favorite: boolean;
+  /** 1-5 stars, or null when the moment was never rated. */
+  rating: number | null;
   createdAt: string;
   updatedAt: string;
 };

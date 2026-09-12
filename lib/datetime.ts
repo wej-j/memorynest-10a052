@@ -1,4 +1,5 @@
 import { format, isToday, isYesterday, parse } from 'date-fns';
+import { de } from 'date-fns/locale';
 
 import type { Moment } from '@/lib/types';
 
@@ -18,22 +19,22 @@ export function momentDateTime(moment: MomentTimestamp): Date {
   return Number.isNaN(parsed.getTime()) ? new Date(moment.createdAt ?? Date.now()) : parsed;
 }
 
-/** "12 September 2026" */
+/** "12. September 2026" */
 export function formatLongDate(date: Date): string {
-  return format(date, 'd MMMM yyyy');
+  return format(date, 'd. MMMM yyyy', { locale: de });
 }
 
-/** "Today · 16:40" / "12 September 2026" for cards. */
+/** "Heute · 16:40" / "12. September 2026" für Karten. */
 export function formatCardDate(moment: MomentTimestamp): string {
   const date = momentDateTime(moment);
-  if (isToday(date)) return `Today · ${format(date, 'HH:mm')}`;
-  if (isYesterday(date)) return `Yesterday · ${format(date, 'HH:mm')}`;
+  if (isToday(date)) return `Heute · ${format(date, 'HH:mm')}`;
+  if (isYesterday(date)) return `Gestern · ${format(date, 'HH:mm')}`;
   return formatLongDate(date);
 }
 
-/** "Saturday, 12 September 2026 at 16:40" for the detail screen. */
+/** "Samstag, 12. September 2026 · 16:40" für die Detailseite. */
 export function formatFullDateTime(moment: MomentTimestamp): string {
-  return format(momentDateTime(moment), "EEEE, d MMMM yyyy 'at' HH:mm");
+  return format(momentDateTime(moment), "EEEE, d. MMMM yyyy '·' HH:mm", { locale: de });
 }
 
 export function isValidDateKey(value: string): boolean {

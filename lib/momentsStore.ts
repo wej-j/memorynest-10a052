@@ -15,6 +15,8 @@ type MomentsState = {
   addMoment: (input: NewMomentInput) => Moment;
   updateMoment: (id: string, patch: Partial<NewMomentInput>) => void;
   deleteMoment: (id: string) => void;
+  toggleFavorite: (id: string) => void;
+  setRating: (id: string, rating: number | null) => void;
 };
 
 function createId(): string {
@@ -55,9 +57,25 @@ export const useMomentsStore = create<MomentsState>()(
       deleteMoment: (id) => {
         set({ moments: get().moments.filter((moment) => moment.id !== id) });
       },
+
+      toggleFavorite: (id) => {
+        set({
+          moments: get().moments.map((moment) =>
+            moment.id === id ? { ...moment, favorite: !moment.favorite } : moment,
+          ),
+        });
+      },
+
+      setRating: (id, rating) => {
+        set({
+          moments: get().moments.map((moment) =>
+            moment.id === id ? { ...moment, rating } : moment,
+          ),
+        });
+      },
     }),
     {
-      name: 'collecting-moments/v1',
+      name: 'remory/v1',
       storage: createJSONStorage(() => AsyncStorage),
       // Only the memories are persisted; the rest is runtime state.
       partialize: (state) => ({ moments: state.moments }),

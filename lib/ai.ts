@@ -71,13 +71,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 const ENRICH_SYSTEM = [
   'You help someone keep a personal memory journal.',
   'From a short note, an optional photo, a date and an optional location, write a warm but factual memory entry.',
+  'Always write in German, using informal "du" wording. Never answer in English.',
   'Never invent specific facts (names, prices, dishes, cities) that are not supported by the note, photo or location.',
   'If the input is thin, stay general rather than making things up.',
   'Reply with JSON only, shaped as:',
   '{"title": string, "description": string, "tags": string[], "location": string | null}',
-  'title: max 6 words, no quotes, no trailing period.',
-  'description: 1-3 short sentences in the first person, written as a memory.',
-  'tags: 3-6 short lowercase tags, except real place names which keep their capitals.',
+  'title: German, max 6 words, no quotes, no trailing period.',
+  'description: German, 1-3 short sentences written as a memory.',
+  'tags: 3-6 short German tags; nouns capitalised as usual in German, real place names keep their spelling.',
   'location: only a place you can actually justify from the photo or note, otherwise null.',
 ].join(' ');
 
@@ -132,19 +133,20 @@ export async function enrichMoment(
 const SEARCH_SYSTEM = [
   'You are the search engine of a personal memory journal.',
   'You receive the full list of saved memories and a question asked in everyday language.',
+  'The user writes and reads German; always answer in German using informal "du" wording.',
   'Pick the memories that genuinely answer the question, most relevant first, at most 5.',
-  'Match on meaning, not exact words: "ice cream" should find gelato, "cafe" should find coffee.',
+  'Match on meaning, not exact words: "Eis" should find Gelato, "Café" should find Kaffee.',
   'If nothing fits, return an empty list and say so plainly.',
   'Reply with JSON only, shaped as: {"answer": string, "momentIds": string[]}',
-  'answer: one warm sentence, max 25 words, referring to what was found. Never invent memories.',
+  'answer: one warm German sentence, max 25 words, referring to what was found. Never invent memories.',
 ].join(' ');
 
 function describeAnswer(count: number): string {
   if (count === 0) {
-    return 'Nothing matched that yet. Try asking about a place, a food or a feeling.';
+    return 'Dazu habe ich noch nichts gefunden. Frag nach einem Ort, einem Essen oder einem Gefühl.';
   }
-  if (count === 1) return 'Found one memory that looks like what you mean.';
-  return `Found ${count} memories that look like what you mean.`;
+  if (count === 1) return 'Eine Erinnerung passt zu deiner Frage.';
+  return `${count} Erinnerungen passen zu deiner Frage.`;
 }
 
 export async function askMemories(question: string, moments: Moment[]): Promise<SearchAnswer> {

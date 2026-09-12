@@ -1,6 +1,7 @@
 import { FieldError, Input, Label, TextArea, TextField, Typography } from 'heroui-native';
 import { View } from 'react-native';
 
+import { StarRating } from '@/components/StarRating';
 import { TagEditor } from '@/components/TagEditor';
 import { isValidDateKey, isValidTimeKey } from '@/lib/datetime';
 
@@ -12,6 +13,7 @@ export type MomentFieldsValue = {
   time: string;
   location: string;
   tags: string[];
+  rating: number | null;
 };
 
 type MomentFieldsProps = {
@@ -27,62 +29,74 @@ export function MomentFields({ value, onChange }: MomentFieldsProps) {
   return (
     <View className="gap-5">
       <TextField>
-        <Label>Title</Label>
+        <Label>Titel</Label>
         <Input
           value={value.title}
           onChangeText={(title) => onChange({ title })}
-          placeholder="Name this moment"
+          placeholder="Gib dem Moment einen Namen"
         />
       </TextField>
 
       <TextField>
-        <Label>Description</Label>
+        <Label>Beschreibung</Label>
         <TextArea
           value={value.description}
           onChangeText={(description) => onChange({ description })}
-          placeholder="What do you want to remember about it?"
+          placeholder="Woran möchtest du dich später erinnern?"
           className="min-h-28"
         />
       </TextField>
 
       <View className="flex-row gap-3">
         <TextField className="flex-1" isInvalid={dateInvalid}>
-          <Label>Date</Label>
+          <Label>Datum</Label>
           <Input
             value={value.date}
             onChangeText={(date) => onChange({ date })}
             placeholder="2026-09-12"
             autoCapitalize="none"
           />
-          <FieldError>Use the format 2026-09-12</FieldError>
+          <FieldError>Format: 2026-09-12</FieldError>
         </TextField>
 
         <TextField className="w-28" isInvalid={timeInvalid}>
-          <Label>Time</Label>
+          <Label>Uhrzeit</Label>
           <Input
             value={value.time}
             onChangeText={(time) => onChange({ time })}
             placeholder="16:40"
             autoCapitalize="none"
           />
-          <FieldError>Use 16:40</FieldError>
+          <FieldError>Format: 16:40</FieldError>
         </TextField>
       </View>
 
       <TextField>
-        <Label>Location</Label>
+        <Label>Ort</Label>
         <Input
           value={value.location}
           onChangeText={(location) => onChange({ location })}
-          placeholder="Add a place (optional)"
+          placeholder="Ort hinzufügen (optional)"
         />
       </TextField>
 
       <View className="gap-2">
         <Typography.Paragraph type="body-sm" weight="medium">
-          Tags
+          Stichwörter
         </Typography.Paragraph>
         <TagEditor tags={value.tags} onChange={(tags) => onChange({ tags })} />
+      </View>
+
+      <View className="gap-2">
+        <Typography.Paragraph type="body-sm" weight="medium">
+          Bewertung
+        </Typography.Paragraph>
+        <StarRating
+          value={value.rating}
+          onChange={(rating) => onChange({ rating })}
+          size={24}
+          showValue
+        />
       </View>
     </View>
   );

@@ -1,7 +1,7 @@
-import { useRouter } from 'expo-router';
-import { Button, SearchField, Spinner, Typography, useThemeColor } from 'heroui-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Button, Chip, SearchField, Spinner, Typography, useThemeColor } from 'heroui-native';
 import { MessageCircleQuestion, Search } from 'lucide-react-native';
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -12,11 +12,11 @@ import { useMomentsStore } from '@/lib/momentsStore';
 import type { Moment } from '@/lib/types';
 
 const EXAMPLES = [
-  'Where did we eat that really good ice cream?',
-  'What did we do after visiting the museum?',
-  'Show me my food memories from Rome.',
-  'When did I visit that castle?',
-  'Show me memories involving coffee.',
+  'Wo haben wir dieses wirklich gute Eis gegessen?',
+  'Was haben wir nach dem Museum gemacht?',
+  'Zeig mir meine Essens-Momente aus Rom.',
+  'Wann war ich bei dieser Burg?',
+  'Zeig mir Erinnerungen mit Kaffee.',
 ];
 
 type SearchState =
@@ -26,26 +26,52 @@ type SearchState =
 
 export default function SearchScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ q?: string }>();
   const moments = useMomentsStore((state) => state.moments);
   const [accentForeground] = useThemeColor(['accent-foreground']);
 
   const [query, setQuery] = useState('');
   const [state, setState] = useState<SearchState>({ status: 'idle' });
+  const askedFor = useRef<string | null>(null);
 
-  const run = async (question: string) => {
-    const trimmed = question.trim();
-    if (trimmed.length === 0) return;
+  const popularTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const moment of moments) {
+      for (const tag of moment.tags) {
+        counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      }
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'de'))
+      .slice(0, 8)
+      .map(([tag]) => tag);
+  }, [moments]);
 
-    setQuery(trimmed);
-    setState({ status: 'loading' });
+  const run = useCallback(
+    async (question: string) => {
+      const trimmed = question.trim();
+      if (trimmed.length === 0) return;
 
-    const answer = await askMemories(trimmed, moments);
-    const results = answer.momentIds
-      .map((id) => moments.find((moment) => moment.id === id))
-      .filter((moment): moment is Moment => moment !== undefined);
+      setQuery(trimmed);
+      setState({ status: 'loading' });
 
-    setState({ status: 'done', answer: answer.answer, results });
-  };
+      const answer = await askMemories(trimmed, moments);
+      const results = answer.momentIds
+        .map((id) => moments.find((moment) => moment.id === id))
+        .filter((moment): moment is Moment => moment !== undefined);
+
+      setState({ status: 'done', answer: answer.answer, results });
+    },
+    [moments],
+  );
+
+  // A question handed over from the start pager runs on arrival.
+  useEffect(() => {
+    const incoming = typeof params.q === 'string' ? params.q.trim() : '';
+    if (incoming.length === 0 || askedFor.current === incoming) return;
+    askedFor.current = incoming;
+    void run(incoming);
+  }, [params.q, run]);
 
   return (
     <SafeAreaView edges={['top']} className="bg-background flex-1">
@@ -59,9 +85,9 @@ export default function SearchScreen() {
           contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 40 }}
         >
           <View className="gap-1 pb-4">
-            <Typography.Heading type="h2">Ask your memories</Typography.Heading>
+            <Typography.Heading type="h2">Suchen</Typography.Heading>
             <Typography.Paragraph type="body-sm" color="muted">
-              You don&apos;t need to remember exactly what you wrote. Just ask what you remember.
+              Du musst nicht wissen, was du geschrieben hast. Frag einfach, woran du dich erinnerst.
             </Typography.Paragraph>
           </View>
 
@@ -70,7 +96,7 @@ export default function SearchScreen() {
               <SearchField.Group>
                 <SearchField.SearchIcon />
                 <SearchField.Input
-                  placeholder="Where did we eat that amazing ice cream?"
+                  placeholder="z. B. „Strand“, „Paris“, „gutes Essen“ ..."
                   returnKeyType="search"
                   onSubmitEditing={() => void run(query)}
                 />
@@ -84,14 +110,38 @@ export default function SearchScreen() {
               isDisabled={query.trim().length === 0 || state.status === 'loading'}
             >
               <Search size={18} color={accentForeground} />
-              <Button.Label>Ask</Button.Label>
+              <Button.Label>Fragen</Button.Label>
             </Button>
           </View>
 
-          {state.status === 'idle' ? (
-            <View className="gap-3 pt-8">
+          {popularTags.length > 0 ? (
+            <View className="gap-2.5 pt-6">
               <Typography.Paragraph type="body-sm" weight="medium">
-                Try asking
+                Beliebte Tags
+              </Typography.Paragraph>
+
+              <View className="flex-row flex-wrap gap-2">
+                {popularTags.map((tag) => (
+                  <Pressable
+                    key={tag}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Nach ${tag} suchen`}
+                    onPress={() => void run(tag)}
+                    className="active:opacity-70"
+                  >
+                    <Chip size="md" variant="secondary">
+                      <Chip.Label>{tag}</Chip.Label>
+                    </Chip>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          ) : null}
+
+          {state.status === 'idle' ? (
+            <View className="gap-3 pt-6">
+              <Typography.Paragraph type="body-sm" weight="medium">
+                Frag zum Beispiel
               </Typography.Paragraph>
 
               {EXAMPLES.map((example) => (
@@ -99,7 +149,7 @@ export default function SearchScreen() {
                   key={example}
                   accessibilityRole="button"
                   onPress={() => void run(example)}
-                  className="border-border bg-surface rounded-2xl border px-4 py-3 active:opacity-80"
+                  className="border-border/60 bg-surface rounded-2xl border px-4 py-3 active:opacity-80"
                 >
                   <Typography.Paragraph type="body-sm">{example}</Typography.Paragraph>
                 </Pressable>
@@ -111,7 +161,7 @@ export default function SearchScreen() {
             <View className="items-center gap-3 pt-14">
               <Spinner size="lg" />
               <Typography.Paragraph type="body-sm" color="muted">
-                Looking through your memories...
+                Ich schaue deine Erinnerungen durch ...
               </Typography.Paragraph>
             </View>
           ) : null}
@@ -125,8 +175,8 @@ export default function SearchScreen() {
               {state.results.length === 0 ? (
                 <EmptyState
                   icon={MessageCircleQuestion}
-                  title="No memory matched that yet."
-                  body="Try a place, a food, or a feeling — or capture the moment you were thinking of."
+                  title="Dazu passt noch keine Erinnerung."
+                  body="Frag nach einem Ort, einem Essen oder einem Gefühl — oder halte den Moment fest, den du meinst."
                 />
               ) : (
                 state.results.map((moment) => (

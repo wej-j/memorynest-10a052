@@ -33,7 +33,7 @@ export function TagEditor({ tags, onChange }: TagEditorProps) {
             <Pressable
               key={tag}
               accessibilityRole="button"
-              accessibilityLabel={`Remove tag ${tag}`}
+              accessibilityLabel={`Stichwort ${tag} entfernen`}
               onPress={() => onChange(tags.filter((item) => item !== tag))}
             >
               <Chip size="sm" variant="soft" color="accent">
@@ -45,7 +45,7 @@ export function TagEditor({ tags, onChange }: TagEditorProps) {
         </View>
       ) : (
         <Typography.Paragraph type="body-sm" color="muted">
-          No tags yet.
+          Noch keine Stichwörter.
         </Typography.Paragraph>
       )}
 
@@ -55,7 +55,7 @@ export function TagEditor({ tags, onChange }: TagEditorProps) {
             value={draft}
             onChangeText={setDraft}
             onSubmitEditing={commit}
-            placeholder="Add a tag"
+            placeholder="Stichwort hinzufügen"
             autoCapitalize="none"
             returnKeyType="done"
           />

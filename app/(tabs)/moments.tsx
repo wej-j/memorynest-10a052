@@ -1,19 +1,19 @@
 import { useRouter } from 'expo-router';
 import { Button, Typography, useThemeColor } from 'heroui-native';
-import { Plus, Sparkles } from 'lucide-react-native';
-import { FlatList, View } from 'react-native';
+import { Plus, Search, Sparkles } from 'lucide-react-native';
+import { FlatList, Pressable, View } from 'react-native';
 
-import { BrandLogo } from '@/components/BrandLogo';
+import { BrandWordmark } from '@/components/BrandWordmark';
+import { EmptyState } from '@/components/EmptyState';
 import { MomentCard } from '@/components/MomentCard';
 import { MomentFilmstrip } from '@/components/MomentFilmstrip';
-import { EmptyState } from '@/components/EmptyState';
 import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
 import { useMomentsStore } from '@/lib/momentsStore';
 
 export default function MomentsScreen() {
   const router = useRouter();
   const moments = useMomentsStore((state) => state.moments);
-  const [accentForeground] = useThemeColor(['accent-foreground']);
+  const [accentForeground, foreground] = useThemeColor(['accent-foreground', 'foreground']);
 
   const openMoment = (id: string) => router.push({ pathname: '/moment/[id]', params: { id } });
 
@@ -25,15 +25,26 @@ export default function MomentsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32, gap: 16 }}
         ListHeaderComponent={
-          <View className="gap-4 pt-2">
-            <View className="flex-row items-center gap-3">
-              <BrandLogo size={44} />
-              <View className="flex-1 gap-0.5">
-                <Typography.Heading type="h3">Collecting Moments</Typography.Heading>
-                <Typography.Paragraph type="body-sm" color="muted">
-                  Your memories, easier to keep.
-                </Typography.Paragraph>
-              </View>
+          <View className="gap-4 pt-1">
+            <View className="flex-row items-center justify-between">
+              <BrandWordmark size={24} />
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Suchen"
+                onPress={() => router.push('/search')}
+                hitSlop={8}
+                className="h-9 w-9 items-center justify-center rounded-full active:opacity-70"
+              >
+                <Search size={20} color={foreground} />
+              </Pressable>
+            </View>
+
+            <View className="gap-0.5">
+              <Typography.Heading type="h4">Hallo, schön dass du da bist!</Typography.Heading>
+              <Typography.Paragraph type="body-sm" color="muted">
+                Deine letzten Momente
+              </Typography.Paragraph>
             </View>
 
             <MomentFilmstrip moments={moments} onSelect={openMoment} />
@@ -41,7 +52,7 @@ export default function MomentsScreen() {
             {moments.length > 0 ? (
               <Button variant="primary" onPress={() => router.push('/capture')}>
                 <Plus size={18} color={accentForeground} />
-                <Button.Label>New moment</Button.Label>
+                <Button.Label>Neuer Moment</Button.Label>
               </Button>
             ) : null}
           </View>
@@ -49,9 +60,9 @@ export default function MomentsScreen() {
         ListEmptyComponent={
           <EmptyState
             icon={Sparkles}
-            title="Your moments will live here."
-            body="Capture something you don't want to forget — a photo, a few words, or both."
-            actionLabel="Create your first moment"
+            title="Hier leben bald deine Momente."
+            body="Halte etwas fest, das du nicht vergessen willst — ein Foto, ein paar Worte oder beides."
+            actionLabel="Ersten Moment festhalten"
             onAction={() => router.push('/capture')}
           />
         }

@@ -17,6 +17,9 @@ const SEED_PHOTOS: Record<string, ImageSource | number> = {
 
 export type MomentImageSource = ImageSource | number | string;
 
+/** Bundled demo photography, used as offline fallback frames for the reel. */
+export const SEED_PHOTO_SOURCES: MomentImageSource[] = Object.values(SEED_PHOTOS);
+
 export function resolveMomentImage(image: MomentImage | null): MomentImageSource | null {
   if (!image) return null;
   if (image.source === 'file') return image.uri;

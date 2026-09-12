@@ -1,152 +1,224 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Button, Typography, useThemeColor } from 'heroui-native';
-import { MapPin, Pencil, SearchX, Trash2 } from 'lucide-react-native';
+import { Button, Surface, Typography, useThemeColor } from 'heroui-native';
+import {
+  CalendarDays,
+  ChevronLeft,
+  Heart,
+  MapPin,
+  Pencil,
+  Share2,
+  Trash2,
+} from 'lucide-react-native';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, Share, View } from 'react-native';
 
 import { EmptyState } from '@/components/EmptyState';
 import { MomentPhoto } from '@/components/MomentPhoto';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { StarRating } from '@/components/StarRating';
 import { TagList } from '@/components/TagList';
 import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
 import { formatFullDateTime } from '@/lib/datetime';
 import { useMoment, useMomentsStore } from '@/lib/momentsStore';
 import { goBackOrReplace } from '@/lib/navigation';
+import type { LucideIcon } from 'lucide-react-native';
 
 export default function MomentDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const moment = useMoment(id);
   const deleteMoment = useMomentsStore((state) => state.deleteMoment);
-  const [foreground, muted, dangerForeground] = useThemeColor([
+  const toggleFavorite = useMomentsStore((state) => state.toggleFavorite);
+  const setRating = useMomentsStore((state) => state.setRating);
+  const [foreground, accent, muted, danger] = useThemeColor([
     'foreground',
+    'accent',
     'muted',
-    'danger-foreground',
+    'danger',
   ]);
 
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [hint, setHint] = useState<string | null>(null);
 
   if (!moment) {
     return (
-      <SafeAreaView edges={['top']} className="bg-background flex-1">
-        <ScreenHeader title="Moment" onBack={() => goBackOrReplace('/')} />
+      <SafeAreaView edges={['top']} className="bg-background flex-1 justify-center">
         <EmptyState
-          icon={SearchX}
-          title="This memory is no longer here."
-          body="It may have been deleted."
-          actionLabel="Back to moments"
-          onAction={() => router.replace('/')}
+          icon={CalendarDays}
+          title="Diese Erinnerung gibt es nicht mehr."
+          body="Vielleicht wurde sie gelöscht. Deine anderen Momente sind noch da."
+          actionLabel="Zu meinen Momenten"
+          onAction={() => router.replace('/moments')}
         />
       </SafeAreaView>
     );
   }
 
-  const remove = () => {
-    deleteMoment(moment.id);
-    router.replace('/');
+  const share = async () => {
+    const message = [moment.title, moment.location, moment.description]
+      .filter((part) => part && part.length > 0)
+      .join('\n');
+
+    try {
+      await Share.share({ message, title: moment.title });
+    } catch {
+      setHint('Teilen ist hier gerade nicht verfügbar.');
+    }
   };
 
-  const noteIsExtra =
-    moment.originalNote.trim().length > 0 &&
-    moment.originalNote.trim().toLowerCase() !== moment.description.trim().toLowerCase();
+  const remove = () => {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      return;
+    }
+    deleteMoment(moment.id);
+    router.replace('/moments');
+  };
 
   return (
-    <SafeAreaView edges={['top']} className="bg-background flex-1">
+    <View className="bg-background flex-1">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <ScreenHeader
-          title="Moment"
-          onBack={() => goBackOrReplace('/')}
-          action={
-            <Button
-              variant="ghost"
-              size="sm"
-              onPress={() =>
-                router.push({ pathname: '/moment/[id]/edit', params: { id: moment.id } })
-              }
+        <View>
+          <MomentPhoto image={moment.image} height={340} />
+
+          <View className="pt-safe-offset-3 absolute top-0 right-0 left-0 flex-row justify-between px-4">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Zurück"
+              onPress={() => goBackOrReplace('/moments')}
+              hitSlop={8}
+              className="h-10 w-10 items-center justify-center rounded-full bg-black/45 active:opacity-70"
             >
-              <Pencil size={16} color={foreground} />
-              <Button.Label>Edit</Button.Label>
-            </Button>
-          }
-        />
+              <ChevronLeft size={22} color="#FFFFFF" />
+            </Pressable>
 
-        <View className="gap-5 px-5 pt-1">
-          {moment.image ? (
-            <MomentPhoto
-              image={moment.image}
-              height={320}
-              className="border-border rounded-3xl border"
-            />
-          ) : null}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={
+                moment.favorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'
+              }
+              onPress={() => toggleFavorite(moment.id)}
+              hitSlop={8}
+              className="h-10 w-10 items-center justify-center rounded-full bg-black/45 active:opacity-70"
+            >
+              <Heart
+                size={20}
+                color={moment.favorite ? accent : '#FFFFFF'}
+                fill={moment.favorite ? accent : 'transparent'}
+              />
+            </Pressable>
+          </View>
+        </View>
 
+        <View className="gap-5 px-5 pt-5">
           <View className="gap-2">
             <Typography.Heading type="h2">{moment.title}</Typography.Heading>
 
-            <Typography.Paragraph type="body-sm" color="muted">
-              {formatFullDateTime(moment)}
-            </Typography.Paragraph>
-
             {moment.location ? (
-              <View className="flex-row items-center gap-1.5">
-                <MapPin size={14} color={muted} />
-                <Typography.Paragraph type="body-sm" color="muted">
-                  {moment.location}
-                </Typography.Paragraph>
+              <View className="flex-row items-center gap-2">
+                <MapPin size={15} color={accent} />
+                <Typography.Paragraph type="body-sm">{moment.location}</Typography.Paragraph>
               </View>
             ) : null}
+
+            <View className="flex-row items-center gap-2">
+              <CalendarDays size={15} color={muted} />
+              <Typography.Paragraph type="body-sm" color="muted">
+                {formatFullDateTime(moment)}
+              </Typography.Paragraph>
+            </View>
           </View>
 
           {moment.description.length > 0 ? (
-            <Typography.Paragraph>{moment.description}</Typography.Paragraph>
+            <Typography.Paragraph type="body">{moment.description}</Typography.Paragraph>
           ) : null}
 
           <TagList tags={moment.tags} size="md" />
 
-          {noteIsExtra ? (
-            <View className="border-border bg-surface-secondary gap-1 rounded-2xl border px-4 py-3">
-              <Typography.Paragraph type="body-xs" color="muted">
-                What you wrote at the time
+          <View className="gap-2">
+            <Typography.Paragraph type="body-sm" weight="medium">
+              Bewertung
+            </Typography.Paragraph>
+            <StarRating
+              value={moment.rating}
+              onChange={(rating) => setRating(moment.id, rating)}
+              size={22}
+              showValue
+            />
+          </View>
+
+          {moment.originalNote.length > 0 ? (
+            <Surface variant="secondary" className="gap-1.5 rounded-3xl p-4">
+              <Typography.Paragraph type="body-sm" weight="medium">
+                Deine Notiz
               </Typography.Paragraph>
-              <Typography.Paragraph type="body-sm">{moment.originalNote}</Typography.Paragraph>
-            </View>
+              <Typography.Paragraph type="body-sm" color="muted">
+                {moment.originalNote}
+              </Typography.Paragraph>
+            </Surface>
           ) : null}
 
+          <Surface variant="secondary" className="flex-row rounded-3xl px-2 py-3">
+            <DetailAction
+              icon={Pencil}
+              label="Bearbeiten"
+              color={foreground}
+              onPress={() =>
+                router.push({ pathname: '/moment/[id]/edit', params: { id: moment.id } })
+              }
+            />
+            <DetailAction
+              icon={Share2}
+              label="Teilen"
+              color={foreground}
+              onPress={() => void share()}
+            />
+            <DetailAction
+              icon={Trash2}
+              label={confirmDelete ? 'Wirklich?' : 'Löschen'}
+              color={danger}
+              onPress={remove}
+            />
+          </Surface>
+
           {confirmDelete ? (
-            <View className="border-border bg-surface gap-3 rounded-2xl border px-4 py-4">
-              <Typography.Paragraph type="body-sm">
-                Delete this moment? This cannot be undone.
-              </Typography.Paragraph>
-
-              <View className="flex-row gap-3">
-                <Button
-                  variant="secondary"
-                  className="flex-1"
-                  onPress={() => setConfirmDelete(false)}
-                >
-                  <Button.Label>Keep it</Button.Label>
-                </Button>
-
-                <Button variant="danger" className="flex-1" onPress={remove}>
-                  <Trash2 size={16} color={dangerForeground} />
-                  <Button.Label>Delete</Button.Label>
-                </Button>
-              </View>
-            </View>
-          ) : (
-            <Button
-              variant="danger-soft"
-              className="self-start"
-              size="sm"
-              onPress={() => setConfirmDelete(true)}
-            >
-              <Button.Label>Delete moment</Button.Label>
+            <Button variant="tertiary" size="sm" onPress={() => setConfirmDelete(false)}>
+              <Button.Label>Löschen abbrechen</Button.Label>
             </Button>
-          )}
+          ) : null}
+
+          {hint ? (
+            <Typography.Paragraph type="body-sm" color="muted">
+              {hint}
+            </Typography.Paragraph>
+          ) : null}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
+  );
+}
+
+type DetailActionProps = {
+  icon: LucideIcon;
+  label: string;
+  color: string;
+  onPress: () => void;
+};
+
+function DetailAction({ icon: Icon, label, color, onPress }: DetailActionProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      className="flex-1 items-center gap-1.5 py-1 active:opacity-70"
+    >
+      <Icon size={19} color={color} />
+      <Typography.Paragraph type="body-xs" style={{ color }}>
+        {label}
+      </Typography.Paragraph>
+    </Pressable>
   );
 }

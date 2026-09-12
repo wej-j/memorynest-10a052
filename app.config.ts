@@ -10,12 +10,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: 'Collecting Moments',
-    slug: 'collecting-moments',
+    name: 'Remory',
+    slug: 'remory',
     version: process.env.BILT_APP_VERSION ?? '1.0.0',
     orientation: 'portrait',
-    userInterfaceStyle: 'light',
-    scheme: 'collectingmoments',
+    userInterfaceStyle: 'dark',
+    scheme: 'remory',
     runtimeVersion: {
       policy: 'appVersion',
     },
@@ -25,10 +25,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         ITSAppUsesNonExemptEncryption: false,
       },
       supportsTablet: true,
-      bundleIdentifier: process.env.BILT_IOS_BUNDLE_ID ?? 'me.bilt.collectingmoments',
+      bundleIdentifier: process.env.BILT_IOS_BUNDLE_ID ?? 'me.bilt.remory',
     },
     android: {
-      package: process.env.BILT_ANDROID_PACKAGE ?? 'me.bilt.collectingmoments',
+      package: process.env.BILT_ANDROID_PACKAGE ?? 'me.bilt.remory',
     },
     web: {
       bundler: 'metro',
@@ -47,15 +47,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         'expo-image-picker',
         {
-          photosPermission: 'Collecting Moments uses your photos so you can add them to a moment.',
-          cameraPermission: 'Collecting Moments uses the camera to capture a moment right away.',
+          photosPermission:
+            'Remory braucht Zugriff auf deine Fotos, um sie einem Moment hinzuzufügen.',
+          cameraPermission: 'Remory nutzt die Kamera, um einen Moment direkt festzuhalten.',
         },
       ],
       [
         'expo-location',
         {
           locationWhenInUsePermission:
-            'Collecting Moments can suggest where a moment happened. Location is always optional.',
+            'Remory kann vorschlagen, wo ein Moment passiert ist. Der Ort ist immer optional.',
         },
       ],
       ...nativePlugins,

@@ -40,83 +40,83 @@
 @source './node_modules/heroui-native/lib';
 
 /*
- * Collecting Moments — warm, photographic, light-only palette.
- * Cream paper background, white photo cards, terracotta accent, ink text.
+ * Remory — dark, photographic, purple palette.
+ * Near-black violet background, deep plum surfaces, orchid accent.
  * Both light and dark variants carry the same values because the app is
- * intentionally light-only (see Uniwind.setTheme('light') in app/_layout.tsx).
+ * intentionally dark-only (see Uniwind.setTheme('dark') in app/_layout.tsx).
  */
 @layer theme {
   :root {
     @variant light {
-      --background: oklch(0.982 0.014 82);
-      --background-secondary: oklch(0.962 0.018 80);
-      --background-tertiary: oklch(0.942 0.022 78);
+      --background: oklch(0.155 0.022 300);
+      --background-secondary: oklch(0.195 0.026 300);
+      --background-tertiary: oklch(0.235 0.028 300);
 
-      --foreground: oklch(0.28 0.028 46);
-      --muted: oklch(0.53 0.03 50);
+      --foreground: oklch(0.968 0.008 300);
+      --muted: oklch(0.7 0.024 300);
 
-      --surface: oklch(1 0 0);
-      --surface-secondary: oklch(0.976 0.012 80);
-      --surface-tertiary: oklch(0.955 0.018 78);
-      --panel: oklch(1 0 0);
+      --surface: oklch(0.215 0.028 300);
+      --surface-secondary: oklch(0.25 0.03 300);
+      --surface-tertiary: oklch(0.29 0.032 300);
+      --panel: oklch(0.195 0.026 300);
 
-      --border: oklch(0.898 0.018 76);
-      --border-secondary: oklch(0.928 0.014 76);
-      --separator: oklch(0.918 0.014 76);
+      --border: oklch(0.315 0.032 300);
+      --border-secondary: oklch(0.275 0.028 300);
+      --separator: oklch(0.29 0.028 300);
 
-      --field: oklch(0.992 0.008 82);
-      --field-border: oklch(0.9 0.018 76);
+      --field: oklch(0.245 0.03 300);
+      --field-border: oklch(0.335 0.038 300);
 
-      --accent: oklch(0.62 0.14 42);
-      --accent-foreground: oklch(0.995 0.005 80);
-      --accent-soft: oklch(0.936 0.038 60);
-      --accent-soft-foreground: oklch(0.46 0.12 42);
-      --focus: oklch(0.62 0.14 42);
-      --link: oklch(0.55 0.12 42);
+      --accent: oklch(0.72 0.165 305);
+      --accent-foreground: oklch(0.17 0.03 300);
+      --accent-soft: oklch(0.315 0.075 305);
+      --accent-soft-foreground: oklch(0.86 0.1 305);
+      --focus: oklch(0.72 0.165 305);
+      --link: oklch(0.8 0.13 305);
 
-      --default: oklch(0.945 0.016 78);
-      --default-foreground: oklch(0.32 0.026 46);
+      --default: oklch(0.27 0.03 300);
+      --default-foreground: oklch(0.955 0.008 300);
 
-      --danger: oklch(0.57 0.19 26);
-      --danger-foreground: oklch(0.995 0.005 80);
-      --success: oklch(0.6 0.11 150);
-      --warning: oklch(0.74 0.13 72);
+      --danger: oklch(0.62 0.19 22);
+      --danger-foreground: oklch(0.985 0.008 300);
+      --success: oklch(0.7 0.13 155);
+      --warning: oklch(0.8 0.13 80);
     }
 
     @variant dark {
-      --background: oklch(0.982 0.014 82);
-      --background-secondary: oklch(0.962 0.018 80);
-      --background-tertiary: oklch(0.942 0.022 78);
+      --background: oklch(0.155 0.022 300);
+      --background-secondary: oklch(0.195 0.026 300);
+      --background-tertiary: oklch(0.235 0.028 300);
 
-      --foreground: oklch(0.28 0.028 46);
-      --muted: oklch(0.53 0.03 50);
+      --foreground: oklch(0.968 0.008 300);
+      --muted: oklch(0.7 0.024 300);
 
-      --surface: oklch(1 0 0);
-      --surface-secondary: oklch(0.976 0.012 80);
-      --surface-tertiary: oklch(0.955 0.018 78);
-      --panel: oklch(1 0 0);
+      --surface: oklch(0.215 0.028 300);
+      --surface-secondary: oklch(0.25 0.03 300);
+      --surface-tertiary: oklch(0.29 0.032 300);
+      --panel: oklch(0.195 0.026 300);
 
-      --border: oklch(0.898 0.018 76);
-      --border-secondary: oklch(0.928 0.014 76);
-      --separator: oklch(0.918 0.014 76);
+      --border: oklch(0.315 0.032 300);
+      --border-secondary: oklch(0.275 0.028 300);
+      --separator: oklch(0.29 0.028 300);
 
-      --field: oklch(0.992 0.008 82);
-      --field-border: oklch(0.9 0.018 76);
+      --field: oklch(0.245 0.03 300);
+      --field-border: oklch(0.335 0.038 300);
 
-      --accent: oklch(0.62 0.14 42);
-      --accent-foreground: oklch(0.995 0.005 80);
-      --accent-soft: oklch(0.936 0.038 60);
-      --accent-soft-foreground: oklch(0.46 0.12 42);
-      --focus: oklch(0.62 0.14 42);
-      --link: oklch(0.55 0.12 42);
+      --accent: oklch(0.72 0.165 305);
+      --accent-foreground: oklch(0.17 0.03 300);
+      --accent-soft: oklch(0.315 0.075 305);
+      --accent-soft-foreground: oklch(0.86 0.1 305);
+      --focus: oklch(0.72 0.165 305);
+      --link: oklch(0.8 0.13 305);
 
-      --default: oklch(0.945 0.016 78);
-      --default-foreground: oklch(0.32 0.026 46);
+      --default: oklch(0.27 0.03 300);
+      --default-foreground: oklch(0.955 0.008 300);
 
-      --danger: oklch(0.57 0.19 26);
-      --danger-foreground: oklch(0.995 0.005 80);
-      --success: oklch(0.6 0.11 150);
-      --warning: oklch(0.74 0.13 72);
+      --danger: oklch(0.62 0.19 22);
+      --danger-foreground: oklch(0.985 0.008 300);
+      --success: oklch(0.7 0.13 155);
+      --warning: oklch(0.8 0.13 80);
     }
   }
 }

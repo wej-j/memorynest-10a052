@@ -43,10 +43,14 @@ function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
 
 export { ErrorBoundary };
 
-// Starter is light-only by default. Remove this when implementing requested dark mode.
-Uniwind.setTheme('light');
+// Remory is a dark-only app; the palette in global.css defines both variants.
+Uniwind.setTheme('dark');
 
 void SplashScreen.preventAutoHideAsync();
+
+export const unstable_settings = {
+  initialRouteName: 'index',
+};
 
 /** Lives inside the provider so it can read themed colors. */
 function AppStack() {
@@ -59,10 +63,15 @@ function AppStack() {
         contentStyle: { backgroundColor: background },
       }}
     >
+      <Stack.Screen name="index" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="review" />
       <Stack.Screen name="moment/[id]/index" />
       <Stack.Screen name="moment/[id]/edit" />
+      <Stack.Screen name="settings/privacy" />
+      <Stack.Screen name="settings/rules" />
+      <Stack.Screen name="settings/support" />
+      <Stack.Screen name="settings/about" />
     </Stack>
   );
 }

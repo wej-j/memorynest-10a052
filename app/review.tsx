@@ -1,9 +1,10 @@
-import { Redirect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Button, Typography, useThemeColor } from 'heroui-native';
-import { Check } from 'lucide-react-native';
+import { Check, Sparkles } from 'lucide-react-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
+import { EmptyState } from '@/components/EmptyState';
 import { MomentFields, type MomentFieldsValue } from '@/components/MomentFields';
 import { MomentPhoto } from '@/components/MomentPhoto';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -11,6 +12,7 @@ import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
 import { isValidDateKey, isValidTimeKey } from '@/lib/datetime';
 import { useDraftStore } from '@/lib/draftStore';
 import { useMomentsStore } from '@/lib/momentsStore';
+import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ReviewScreen() {
   const router = useRouter();
@@ -25,32 +27,60 @@ export default function ReviewScreen() {
     description: enrichment?.description ?? '',
     date: draft.date,
     time: draft.time,
-    location: draft.location ?? '',
+    location: draft.location ?? enrichment?.suggestedLocation ?? '',
     tags: enrichment?.tags ?? [],
+    rating: null,
   }));
 
-  if (!enrichment) return <Redirect href="/capture" />;
+  if (!enrichment) {
+    return (
+      <SafeAreaView edges={['top']} className="bg-background flex-1 justify-center">
+        <EmptyState
+          icon={Sparkles}
+          title="Kein Moment zum Prüfen."
+          body="Halte zuerst einen Moment fest — dann kannst du hier Titel, Beschreibung und Stichwörter anpassen."
+          actionLabel="Moment festhalten"
+          onAction={() => router.replace('/capture')}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  const canSave = isValidDateKey(value.date) && isValidTimeKey(value.time);
 
   const save = () => {
-    const location = value.location.trim();
+    if (!canSave) return;
 
+    const location = value.location.trim();
     addMoment({
       image: draft.image,
       originalNote: draft.note.trim(),
-      title: value.title.trim().length > 0 ? value.title.trim() : 'A moment worth keeping',
+      title: value.title.trim().length > 0 ? value.title.trim() : 'Moment ohne Titel',
       description: value.description.trim(),
       tags: value.tags,
-      date: isValidDateKey(value.date) ? value.date : draft.date,
-      time: isValidTimeKey(value.time) ? value.time : draft.time,
+      date: value.date,
+      time: value.time,
       location: location.length > 0 ? location : null,
+      favorite: false,
+      rating: value.rating,
     });
 
     resetDraft();
-    router.replace('/');
+    router.replace('/moments');
   };
 
   return (
     <SafeAreaView edges={['top']} className="bg-background flex-1">
+      <ScreenHeader
+        title="Moment prüfen"
+        subtitle={
+          enrichment.usedAI
+            ? 'Von der KI vorgeschlagen — du kannst alles ändern.'
+            : 'Auf deinem Gerät erstellt — du kannst alles ändern.'
+        }
+        onBack={() => goBackOrReplace('/capture')}
+      />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
@@ -58,46 +88,33 @@ export default function ReviewScreen() {
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, gap: 20 }}
         >
-          <ScreenHeader
-            title="Review your moment"
-            subtitle={
-              enrichment.usedAI
-                ? 'Suggested for you — change anything that feels off.'
-                : 'Drafted on your device — change anything that feels off.'
-            }
-            onBack={() => router.back()}
-          />
-
-          <View className="gap-5 px-5 pt-2">
-            {draft.image ? (
-              <MomentPhoto
-                image={draft.image}
-                height={240}
-                className="border-border rounded-3xl border"
-              />
-            ) : null}
-
-            <MomentFields
-              value={value}
-              onChange={(patch) => setValue((current) => ({ ...current, ...patch }))}
+          {draft.image ? (
+            <MomentPhoto
+              image={draft.image}
+              height={240}
+              className="border-border/60 rounded-3xl border"
             />
+          ) : null}
 
-            {draft.note.trim().length > 0 ? (
-              <View className="border-border bg-surface-secondary gap-1 rounded-2xl border px-4 py-3">
-                <Typography.Paragraph type="body-xs" color="muted">
-                  Your original note
-                </Typography.Paragraph>
-                <Typography.Paragraph type="body-sm">{draft.note.trim()}</Typography.Paragraph>
-              </View>
-            ) : null}
+          <MomentFields value={value} onChange={(patch) => setValue({ ...value, ...patch })} />
 
-            <Button variant="primary" size="lg" onPress={save}>
-              <Check size={18} color={accentForeground} />
-              <Button.Label>Save moment</Button.Label>
-            </Button>
-          </View>
+          {draft.note.trim().length > 0 ? (
+            <View className="gap-1">
+              <Typography.Paragraph type="body-sm" weight="medium">
+                Deine Notiz
+              </Typography.Paragraph>
+              <Typography.Paragraph type="body-sm" color="muted">
+                {draft.note.trim()}
+              </Typography.Paragraph>
+            </View>
+          ) : null}
+
+          <Button variant="primary" size="lg" onPress={save} isDisabled={!canSave}>
+            <Check size={18} color={accentForeground} />
+            <Button.Label>Moment speichern</Button.Label>
+          </Button>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
