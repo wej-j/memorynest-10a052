@@ -1,0 +1,381 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getLocales } from 'expo-localization';
+import { createInstance } from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+export const LANGUAGE_STORAGE_KEY = 'remory/language';
+export type AppLanguage = 'de' | 'en';
+
+const i18next = createInstance();
+
+const de = {
+  common: {
+    back: 'Zurück',
+    continue: 'Weiter',
+    cancel: 'Abbrechen',
+    save: 'Speichern',
+    search: 'Suche',
+    profile: 'Profil',
+    version: 'Version {{version}}',
+    untitledMoment: 'Moment ohne Titel',
+  },
+  tabs: { home: 'Home', photos: 'Fotos', new: 'Neu', search: 'Suche', profile: 'Profil' },
+  start: {
+    addPhoto: 'Zum Foto hinzufügen',
+    swipe: 'Nach oben wischen, um ein Foto hinzuzufügen',
+    newMoment: 'Neuer Moment',
+    skip: 'Überspringen',
+    yourMoments: 'Deine Momente',
+    movingPhotos: 'Deine Fotos in Bewegung',
+    movingPhotosBody: 'Deine hinzugefügten Fotos laufen wie ein Film an dir vorbei.',
+    noPhotos: 'Noch keine Fotos',
+    noPhotosBody: 'Füge deinem ersten Moment ein Foto hinzu. Danach erscheint es hier im Film.',
+    openAll: 'Alle Momente öffnen',
+  },
+  home: {
+    search: 'Suchen',
+    greeting: 'Hallo, schön dass du da bist!',
+    recent: 'Deine letzten Momente',
+    newMoment: 'Neuer Moment',
+    emptyTitle: 'Hier leben bald deine Momente.',
+    emptyBody:
+      'Halte etwas fest, das du nicht vergessen willst — ein Foto, ein paar Worte oder beides.',
+    firstMoment: 'Ersten Moment festhalten',
+  },
+  photos: {
+    title: 'Meine Fotos',
+    all: 'Alle',
+    favorites: 'Favoriten',
+    noFavorites: 'Noch keine Favoriten.',
+    noPhotos: 'Noch keine Fotos.',
+    noFavoritesBody: 'Tippe auf das Herz einer Erinnerung, um sie hier zu sammeln.',
+    noPhotosBody: 'Sobald du einen Moment mit Foto speicherst, erscheint er hier.',
+  },
+  capture: {
+    title: 'Neuer Moment',
+    intro: 'Ein Foto, ein paar Worte oder beides. Nichts davon ist Pflicht.',
+    takePhoto: 'Foto aufnehmen',
+    addPhotos: 'Fotos hinzufügen',
+    selected_one: '{{count}} Foto ausgewählt',
+    selected_other: '{{count}} Fotos ausgewählt',
+    prompt: 'Woran möchtest du dich erinnern?',
+    notePlaceholder: 'Bestes Pistazieneis nach dem Museum ...',
+    location: 'Ort',
+    currentLocation: 'Aktuellen Ort verwenden',
+    locationPlaceholder: 'Rom, Italien',
+    date: 'Datum',
+    time: 'Uhrzeit',
+    dateFormat: 'Format: 2026-09-12',
+    timeFormat: 'Format: 16:40',
+    maxPhotos: 'Du kannst bis zu {{count}} Fotos zu einem Moment hinzufügen.',
+    photoError: 'Diese Fotos ließen sich nicht verwenden. Versuch es mit anderen Fotos.',
+    locationError: 'Der Ort ist gerade nicht verfügbar — du kannst ihn auch eintippen.',
+    offlineAI: 'Ohne KI-Schlüssel: Titel und Stichwörter entstehen direkt auf deinem Gerät.',
+  },
+  fields: {
+    title: 'Titel',
+    titlePlaceholder: 'Gib dem Moment einen Namen',
+    description: 'Beschreibung',
+    descriptionPlaceholder: 'Woran möchtest du dich später erinnern?',
+    locationOptional: 'Ort hinzufügen (optional)',
+    tags: 'Stichwörter',
+    rating: 'Bewertung',
+  },
+  tags: {
+    empty: 'Noch keine Stichwörter.',
+    add: 'Stichwort hinzufügen',
+    remove: 'Stichwort {{tag}} entfernen',
+  },
+  processing: {
+    title: 'Ich merke mir diesen Moment ...',
+    steps: [
+      'Deine Notiz verstehen ...',
+      'Das Foto anschauen ...',
+      'Nützliche Details finden ...',
+      'Stichwörter erstellen ...',
+    ],
+  },
+  search: {
+    title: 'Suchen',
+    intro: 'Du musst nicht wissen, was du geschrieben hast. Frag einfach, woran du dich erinnerst.',
+    placeholder: 'z. B. „Strand“, „Paris“, „gutes Essen“ ...',
+    ask: 'Fragen',
+    popularTags: 'Beliebte Tags',
+    examplesTitle: 'Frag zum Beispiel',
+    examples: [
+      'Wo haben wir dieses wirklich gute Eis gegessen?',
+      'Was haben wir nach dem Museum gemacht?',
+      'Zeig mir meine Essens-Momente aus Rom.',
+      'Wann war ich bei dieser Burg?',
+      'Zeig mir Erinnerungen mit Kaffee.',
+    ],
+    loading: 'Ich schaue deine Erinnerungen durch ...',
+    emptyTitle: 'Dazu passt noch keine Erinnerung.',
+    emptyBody:
+      'Frag nach einem Ort, einem Essen oder einem Gefühl — oder halte den Moment fest, den du meinst.',
+    tagLabel: 'Nach {{tag}} suchen',
+  },
+  review: {
+    missingTitle: 'Kein Moment zum Prüfen.',
+    missingBody:
+      'Halte zuerst einen Moment fest — dann kannst du hier Titel, Beschreibung und Stichwörter anpassen.',
+    capture: 'Moment festhalten',
+    title: 'Moment prüfen',
+    aiSubtitle: 'Von der KI vorgeschlagen — du kannst alles ändern.',
+    deviceSubtitle: 'Auf deinem Gerät erstellt — du kannst alles ändern.',
+    note: 'Deine Notiz',
+    save: 'Moment speichern',
+  },
+  moment: {
+    missingTitle: 'Diese Erinnerung gibt es nicht mehr.',
+    missingBody: 'Vielleicht wurde sie gelöscht. Deine anderen Momente sind noch da.',
+    backToMoments: 'Zu meinen Momenten',
+    removeFavorite: 'Aus Favoriten entfernen',
+    addFavorite: 'Zu Favoriten hinzufügen',
+    note: 'Deine Notiz',
+    edit: 'Bearbeiten',
+    share: 'Teilen',
+    delete: 'Löschen',
+    confirmDelete: 'Wirklich?',
+    cancelDelete: 'Löschen abbrechen',
+    shareError: 'Teilen ist hier gerade nicht verfügbar.',
+    editTitle: 'Moment bearbeiten',
+    saveChanges: 'Änderungen speichern',
+  },
+  profile: {
+    collection: 'Deine Sammlung',
+    moment_one: '{{count}} Moment',
+    moment_other: '{{count}} Momente',
+    favorite_one: '{{count}} Favorit',
+    favorite_other: '{{count}} Favoriten',
+    settings: 'Einstellungen',
+    appSettings: 'App-Einstellungen',
+    standard: 'Standard',
+    language: 'Sprache',
+    privacy: 'Datenschutz',
+    rules: 'Regeln & Nutzung',
+    support: 'Hilfe & Support',
+    about: 'Über Remory',
+    madeWithLove: 'Wir haben die App mit Liebe gemacht',
+  },
+  language: {
+    title: 'Sprache',
+    intro: 'Wähle die Sprache der App.',
+    german: 'Deutsch',
+    english: 'Englisch',
+    active: 'Ausgewählt',
+  },
+  accessibility: {
+    removePhoto: 'Foto {{number}} entfernen',
+    stars: '{{count}} von 5 Sternen',
+  },
+  dates: { today: 'Heute', yesterday: 'Gestern' },
+  install: {
+    title: 'Zum Home-Bildschirm hinzufügen',
+    body: 'Installiere die App für die Vollbildansicht.',
+    later: 'Nicht jetzt',
+    install: 'Installieren',
+    iosBody: 'Tippe auf Teilen und dann auf „Zum Home-Bildschirm“, um die App zu installieren.',
+    understood: 'Verstanden',
+  },
+  notFound: { title: 'Hoppla!', body: 'Diese Seite gibt es nicht.', action: 'Zur Startseite' },
+};
+
+const en = {
+  common: {
+    back: 'Back',
+    continue: 'Continue',
+    cancel: 'Cancel',
+    save: 'Save',
+    search: 'Search',
+    profile: 'Profile',
+    version: 'Version {{version}}',
+    untitledMoment: 'Untitled moment',
+  },
+  tabs: { home: 'Home', photos: 'Photos', new: 'New', search: 'Search', profile: 'Profile' },
+  start: {
+    addPhoto: 'Add a photo',
+    swipe: 'Swipe up to add a photo',
+    newMoment: 'New moment',
+    skip: 'Skip',
+    yourMoments: 'Your moments',
+    movingPhotos: 'Your photos in motion',
+    movingPhotosBody: 'Your added photos move past you like a film.',
+    noPhotos: 'No photos yet',
+    noPhotosBody: 'Add a photo to your first moment. It will then appear here in the film.',
+    openAll: 'Open all moments',
+  },
+  home: {
+    search: 'Search',
+    greeting: 'Hello, good to see you!',
+    recent: 'Your recent moments',
+    newMoment: 'New moment',
+    emptyTitle: 'Your moments will live here.',
+    emptyBody: 'Save something you do not want to forget — a photo, a few words, or both.',
+    firstMoment: 'Capture your first moment',
+  },
+  photos: {
+    title: 'My photos',
+    all: 'All',
+    favorites: 'Favorites',
+    noFavorites: 'No favorites yet.',
+    noPhotos: 'No photos yet.',
+    noFavoritesBody: 'Tap the heart on a memory to collect it here.',
+    noPhotosBody: 'When you save a moment with a photo, it will appear here.',
+  },
+  capture: {
+    title: 'New moment',
+    intro: 'A photo, a few words, or both. None of it is required.',
+    takePhoto: 'Take a photo',
+    addPhotos: 'Add photos',
+    selected_one: '{{count}} photo selected',
+    selected_other: '{{count}} photos selected',
+    prompt: 'What would you like to remember?',
+    notePlaceholder: 'The best pistachio gelato after the museum ...',
+    location: 'Location',
+    currentLocation: 'Use current location',
+    locationPlaceholder: 'Rome, Italy',
+    date: 'Date',
+    time: 'Time',
+    dateFormat: 'Format: 2026-09-12',
+    timeFormat: 'Format: 16:40',
+    maxPhotos: 'You can add up to {{count}} photos to one moment.',
+    photoError: 'These photos could not be used. Try different photos.',
+    locationError: 'Your location is unavailable right now — you can also enter it manually.',
+    offlineAI: 'Without an AI key, titles and tags are created directly on your device.',
+  },
+  fields: {
+    title: 'Title',
+    titlePlaceholder: 'Give this moment a name',
+    description: 'Description',
+    descriptionPlaceholder: 'What would you like to remember later?',
+    locationOptional: 'Add a location (optional)',
+    tags: 'Tags',
+    rating: 'Rating',
+  },
+  tags: {
+    empty: 'No tags yet.',
+    add: 'Add a tag',
+    remove: 'Remove tag {{tag}}',
+  },
+  processing: {
+    title: 'Saving this moment ...',
+    steps: [
+      'Understanding your note ...',
+      'Looking at the photo ...',
+      'Finding useful details ...',
+      'Creating tags ...',
+    ],
+  },
+  search: {
+    title: 'Search',
+    intro: 'You do not need to remember what you wrote. Just ask about what you remember.',
+    placeholder: 'e.g. “beach”, “Paris”, “great food” ...',
+    ask: 'Ask',
+    popularTags: 'Popular tags',
+    examplesTitle: 'Try asking',
+    examples: [
+      'Where did we have that really good gelato?',
+      'What did we do after the museum?',
+      'Show me my food moments from Rome.',
+      'When did I visit that castle?',
+      'Show me memories with coffee.',
+    ],
+    loading: 'Looking through your memories ...',
+    emptyTitle: 'No memory matches that yet.',
+    emptyBody: 'Ask about a place, food, or a feeling — or capture the moment you mean.',
+    tagLabel: 'Search for {{tag}}',
+  },
+  review: {
+    missingTitle: 'No moment to review.',
+    missingBody:
+      'Capture a moment first, then you can adjust its title, description, and tags here.',
+    capture: 'Capture a moment',
+    title: 'Review moment',
+    aiSubtitle: 'Suggested by AI — you can change everything.',
+    deviceSubtitle: 'Created on your device — you can change everything.',
+    note: 'Your note',
+    save: 'Save moment',
+  },
+  moment: {
+    missingTitle: 'This memory no longer exists.',
+    missingBody: 'It may have been deleted. Your other moments are still here.',
+    backToMoments: 'Go to my moments',
+    removeFavorite: 'Remove from favorites',
+    addFavorite: 'Add to favorites',
+    note: 'Your note',
+    edit: 'Edit',
+    share: 'Share',
+    delete: 'Delete',
+    confirmDelete: 'Are you sure?',
+    cancelDelete: 'Cancel deletion',
+    shareError: 'Sharing is not available here right now.',
+    editTitle: 'Edit moment',
+    saveChanges: 'Save changes',
+  },
+  profile: {
+    collection: 'Your collection',
+    moment_one: '{{count}} moment',
+    moment_other: '{{count}} moments',
+    favorite_one: '{{count}} favorite',
+    favorite_other: '{{count}} favorites',
+    settings: 'Settings',
+    appSettings: 'App settings',
+    standard: 'Standard',
+    language: 'Language',
+    privacy: 'Privacy',
+    rules: 'Rules & Use',
+    support: 'Help & Support',
+    about: 'About Remory',
+    madeWithLove: 'We made this app with love',
+  },
+  language: {
+    title: 'Language',
+    intro: 'Choose the app language.',
+    german: 'German',
+    english: 'English',
+    active: 'Selected',
+  },
+  accessibility: {
+    removePhoto: 'Remove photo {{number}}',
+    stars: '{{count}} out of 5 stars',
+  },
+  dates: { today: 'Today', yesterday: 'Yesterday' },
+  install: {
+    title: 'Add to home screen',
+    body: 'Install this app for a full-screen experience.',
+    later: 'Not now',
+    install: 'Install',
+    iosBody: 'Tap Share, then “Add to Home Screen” to install this app.',
+    understood: 'Got it',
+  },
+  notFound: { title: 'Oops!', body: "This screen doesn't exist.", action: 'Go to home screen' },
+};
+
+const deviceLanguage: AppLanguage = getLocales()[0]?.languageCode === 'en' ? 'en' : 'de';
+
+void i18next.use(initReactI18next).init({
+  compatibilityJSON: 'v4',
+  resources: { de: { translation: de }, en: { translation: en } },
+  lng: deviceLanguage,
+  fallbackLng: 'de',
+  interpolation: { escapeValue: false },
+  returnObjects: true,
+});
+
+void AsyncStorage.getItem(LANGUAGE_STORAGE_KEY).then((storedLanguage) => {
+  if (storedLanguage === 'de' || storedLanguage === 'en') {
+    void i18next.changeLanguage(storedLanguage);
+  }
+});
+
+export function getAppLanguage(): AppLanguage {
+  return i18next.resolvedLanguage === 'en' ? 'en' : 'de';
+}
+
+export async function setAppLanguage(language: AppLanguage): Promise<void> {
+  await i18next.changeLanguage(language);
+  await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+}
+
+export default i18next;

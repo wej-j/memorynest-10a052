@@ -3,6 +3,7 @@ import { Button, Chip, SearchField, Spinner, Typography, useThemeColor } from 'h
 import { MessageCircleQuestion, Search } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/EmptyState';
 import { MomentCard } from '@/components/MomentCard';
@@ -11,14 +12,6 @@ import { askMemories } from '@/lib/ai';
 import { useMomentsStore } from '@/lib/momentsStore';
 import type { Moment } from '@/lib/types';
 
-const EXAMPLES = [
-  'Wo haben wir dieses wirklich gute Eis gegessen?',
-  'Was haben wir nach dem Museum gemacht?',
-  'Zeig mir meine Essens-Momente aus Rom.',
-  'Wann war ich bei dieser Burg?',
-  'Zeig mir Erinnerungen mit Kaffee.',
-];
-
 type SearchState =
   | { status: 'idle' }
   | { status: 'loading' }
@@ -26,46 +19,44 @@ type SearchState =
 
 export default function SearchScreen() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   const params = useLocalSearchParams<{ q?: string }>();
   const moments = useMomentsStore((state) => state.moments);
   const [accentForeground] = useThemeColor(['accent-foreground']);
-
   const [query, setQuery] = useState('');
   const [state, setState] = useState<SearchState>({ status: 'idle' });
   const askedFor = useRef<string | null>(null);
+  const translatedExamples = t('search.examples', { returnObjects: true });
+  const examples = Array.isArray(translatedExamples)
+    ? translatedExamples.filter((example): example is string => typeof example === 'string')
+    : [];
+  const locale = i18n.resolvedLanguage ?? 'de';
 
   const popularTags = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const moment of moments) {
-      for (const tag of moment.tags) {
-        counts.set(tag, (counts.get(tag) ?? 0) + 1);
-      }
-    }
+    for (const moment of moments)
+      for (const tag of moment.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1);
     return [...counts.entries()]
-      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'de'))
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], locale))
       .slice(0, 8)
       .map(([tag]) => tag);
-  }, [moments]);
+  }, [locale, moments]);
 
   const run = useCallback(
     async (question: string) => {
       const trimmed = question.trim();
       if (trimmed.length === 0) return;
-
       setQuery(trimmed);
       setState({ status: 'loading' });
-
       const answer = await askMemories(trimmed, moments);
       const results = answer.momentIds
         .map((id) => moments.find((moment) => moment.id === id))
         .filter((moment): moment is Moment => moment !== undefined);
-
       setState({ status: 'done', answer: answer.answer, results });
     },
     [moments],
   );
 
-  // A question handed over from the start pager runs on arrival.
   useEffect(() => {
     const incoming = typeof params.q === 'string' ? params.q.trim() : '';
     if (incoming.length === 0 || askedFor.current === incoming) return;
@@ -85,47 +76,43 @@ export default function SearchScreen() {
           contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 40 }}
         >
           <View className="gap-1 pb-4">
-            <Typography.Heading type="h2">Suchen</Typography.Heading>
+            <Typography.Heading type="h2">{t('search.title')}</Typography.Heading>
             <Typography.Paragraph type="body-sm" color="muted">
-              Du musst nicht wissen, was du geschrieben hast. Frag einfach, woran du dich erinnerst.
+              {t('search.intro')}
             </Typography.Paragraph>
           </View>
-
           <View className="gap-3">
             <SearchField value={query} onChange={setQuery}>
               <SearchField.Group>
                 <SearchField.SearchIcon />
                 <SearchField.Input
-                  placeholder="z. B. „Strand“, „Paris“, „gutes Essen“ ..."
+                  placeholder={t('search.placeholder')}
                   returnKeyType="search"
                   onSubmitEditing={() => void run(query)}
                 />
                 <SearchField.ClearButton />
               </SearchField.Group>
             </SearchField>
-
             <Button
               variant="primary"
               onPress={() => void run(query)}
               isDisabled={query.trim().length === 0 || state.status === 'loading'}
             >
               <Search size={18} color={accentForeground} />
-              <Button.Label>Fragen</Button.Label>
+              <Button.Label>{t('search.ask')}</Button.Label>
             </Button>
           </View>
-
           {popularTags.length > 0 ? (
             <View className="gap-2.5 pt-6">
               <Typography.Paragraph type="body-sm" weight="medium">
-                Beliebte Tags
+                {t('search.popularTags')}
               </Typography.Paragraph>
-
               <View className="flex-row flex-wrap gap-2">
                 {popularTags.map((tag) => (
                   <Pressable
                     key={tag}
                     accessibilityRole="button"
-                    accessibilityLabel={`Nach ${tag} suchen`}
+                    accessibilityLabel={t('search.tagLabel', { tag })}
                     onPress={() => void run(tag)}
                     className="active:opacity-70"
                   >
@@ -137,14 +124,12 @@ export default function SearchScreen() {
               </View>
             </View>
           ) : null}
-
           {state.status === 'idle' ? (
             <View className="gap-3 pt-6">
               <Typography.Paragraph type="body-sm" weight="medium">
-                Frag zum Beispiel
+                {t('search.examplesTitle')}
               </Typography.Paragraph>
-
-              {EXAMPLES.map((example) => (
+              {examples.map((example) => (
                 <Pressable
                   key={example}
                   accessibilityRole="button"
@@ -156,27 +141,24 @@ export default function SearchScreen() {
               ))}
             </View>
           ) : null}
-
           {state.status === 'loading' ? (
             <View className="items-center gap-3 pt-14">
               <Spinner size="lg" />
               <Typography.Paragraph type="body-sm" color="muted">
-                Ich schaue deine Erinnerungen durch ...
+                {t('search.loading')}
               </Typography.Paragraph>
             </View>
           ) : null}
-
           {state.status === 'done' ? (
             <View className="gap-4 pt-6">
               <Typography.Paragraph type="body-sm" color="muted">
                 {state.answer}
               </Typography.Paragraph>
-
               {state.results.length === 0 ? (
                 <EmptyState
                   icon={MessageCircleQuestion}
-                  title="Dazu passt noch keine Erinnerung."
-                  body="Frag nach einem Ort, einem Essen oder einem Gefühl — oder halte den Moment fest, den du meinst."
+                  title={t('search.emptyTitle')}
+                  body={t('search.emptyBody')}
                 />
               ) : (
                 state.results.map((moment) => (

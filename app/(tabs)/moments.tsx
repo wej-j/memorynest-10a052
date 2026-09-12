@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { Button, Typography, useThemeColor } from 'heroui-native';
 import { Plus, Search, Sparkles } from 'lucide-react-native';
 import { FlatList, Pressable, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { BrandWordmark } from '@/components/BrandWordmark';
 import { EmptyState } from '@/components/EmptyState';
@@ -12,6 +13,7 @@ import { useMomentsStore } from '@/lib/momentsStore';
 
 export default function MomentsScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const moments = useMomentsStore((state) => state.moments);
   const [accentForeground, foreground] = useThemeColor(['accent-foreground', 'foreground']);
 
@@ -28,10 +30,9 @@ export default function MomentsScreen() {
           <View className="gap-4 pt-1">
             <View className="flex-row items-center justify-between">
               <BrandWordmark size={24} />
-
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Suchen"
+                accessibilityLabel={t('common.search')}
                 onPress={() => router.push('/search')}
                 hitSlop={8}
                 className="h-9 w-9 items-center justify-center rounded-full active:opacity-70"
@@ -39,20 +40,17 @@ export default function MomentsScreen() {
                 <Search size={20} color={foreground} />
               </Pressable>
             </View>
-
             <View className="gap-0.5">
-              <Typography.Heading type="h4">Hallo, schön dass du da bist!</Typography.Heading>
+              <Typography.Heading type="h4">{t('home.greeting')}</Typography.Heading>
               <Typography.Paragraph type="body-sm" color="muted">
-                Deine letzten Momente
+                {t('home.recent')}
               </Typography.Paragraph>
             </View>
-
             <MomentFilmstrip moments={moments} onSelect={openMoment} />
-
             {moments.length > 0 ? (
               <Button variant="primary" onPress={() => router.push('/capture')}>
                 <Plus size={18} color={accentForeground} />
-                <Button.Label>Neuer Moment</Button.Label>
+                <Button.Label>{t('home.new')}</Button.Label>
               </Button>
             ) : null}
           </View>
@@ -60,9 +58,9 @@ export default function MomentsScreen() {
         ListEmptyComponent={
           <EmptyState
             icon={Sparkles}
-            title="Hier leben bald deine Momente."
-            body="Halte etwas fest, das du nicht vergessen willst — ein Foto, ein paar Worte oder beides."
-            actionLabel="Ersten Moment festhalten"
+            title={t('home.emptyTitle')}
+            body={t('home.emptyBody')}
+            actionLabel={t('home.first')}
             onAction={() => router.push('/capture')}
           />
         }

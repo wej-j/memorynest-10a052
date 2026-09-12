@@ -3,6 +3,7 @@ import { Chip, Typography } from 'heroui-native';
 import { Images } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, useWindowDimensions, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/EmptyState';
 import { MomentPhoto } from '@/components/MomentPhoto';
@@ -10,13 +11,7 @@ import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
 import { useMomentsStore } from '@/lib/momentsStore';
 import type { MomentImage } from '@/lib/types';
 
-const FILTERS = [
-  { key: 'all', label: 'Alle' },
-  { key: 'favorites', label: 'Favoriten' },
-] as const;
-
-type FilterKey = (typeof FILTERS)[number]['key'];
-
+type FilterKey = 'all' | 'favorites';
 type PhotoTile = {
   key: string;
   momentId: string;
@@ -30,10 +25,14 @@ const GAP = 12;
 
 export default function PhotosScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const moments = useMomentsStore((state) => state.moments);
   const [filter, setFilter] = useState<FilterKey>('all');
-
+  const filters: { key: FilterKey; label: string }[] = [
+    { key: 'all', label: t('photos.all') },
+    { key: 'favorites', label: t('photos.favorites') },
+  ];
   const tileWidth = Math.floor((Math.min(width, 720) - GUTTER * 2 - GAP) / 2);
   const tileHeight = Math.round(tileWidth * 1.25);
 
@@ -61,17 +60,12 @@ export default function PhotosScreen() {
         numColumns={2}
         showsVerticalScrollIndicator={false}
         columnWrapperStyle={{ gap: GAP }}
-        contentContainerStyle={{
-          paddingHorizontal: GUTTER,
-          paddingBottom: 32,
-          gap: GAP,
-        }}
+        contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 32, gap: GAP }}
         ListHeaderComponent={
           <View className="gap-4 pt-1 pb-1">
-            <Typography.Heading type="h2">Meine Fotos</Typography.Heading>
-
+            <Typography.Heading type="h2">{t('photos.title')}</Typography.Heading>
             <View className="flex-row gap-2">
-              {FILTERS.map((item) => (
+              {filters.map((item) => (
                 <Pressable
                   key={item.key}
                   accessibilityRole="button"
@@ -89,12 +83,8 @@ export default function PhotosScreen() {
         ListEmptyComponent={
           <EmptyState
             icon={Images}
-            title={filter === 'favorites' ? 'Noch keine Favoriten.' : 'Noch keine Fotos.'}
-            body={
-              filter === 'favorites'
-                ? 'Tippe auf das Herz einer Erinnerung, um sie hier zu sammeln.'
-                : 'Sobald du einen Moment mit Foto speicherst, erscheint er hier.'
-            }
+            title={filter === 'favorites' ? t('photos.noFavorites') : t('photos.noPhotos')}
+            body={filter === 'favorites' ? t('photos.noFavoritesBody') : t('photos.noPhotosBody')}
           />
         }
         renderItem={({ item }) => (

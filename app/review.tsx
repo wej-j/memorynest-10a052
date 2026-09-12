@@ -3,6 +3,7 @@ import { Button, Typography, useThemeColor } from 'heroui-native';
 import { Check, Sparkles } from 'lucide-react-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/EmptyState';
 import { MomentFields, type MomentFieldsValue } from '@/components/MomentFields';
@@ -16,12 +17,12 @@ import { goBackOrReplace } from '@/lib/navigation';
 
 export default function ReviewScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const draft = useDraftStore((state) => state.draft);
   const enrichment = useDraftStore((state) => state.enrichment);
   const resetDraft = useDraftStore((state) => state.reset);
   const addMoment = useMomentsStore((state) => state.addMoment);
   const [accentForeground] = useThemeColor(['accent-foreground']);
-
   const [value, setValue] = useState<MomentFieldsValue>(() => ({
     title: enrichment?.title ?? '',
     description: enrichment?.description ?? '',
@@ -37,9 +38,9 @@ export default function ReviewScreen() {
       <SafeAreaView edges={['top']} className="bg-background flex-1 justify-center">
         <EmptyState
           icon={Sparkles}
-          title="Kein Moment zum Prüfen."
-          body="Halte zuerst einen Moment fest — dann kannst du hier Titel, Beschreibung und Stichwörter anpassen."
-          actionLabel="Moment festhalten"
+          title={t('review.missingTitle')}
+          body={t('review.missingBody')}
+          actionLabel={t('review.capture')}
           onAction={() => router.replace('/capture')}
         />
       </SafeAreaView>
@@ -47,15 +48,13 @@ export default function ReviewScreen() {
   }
 
   const canSave = isValidDateKey(value.date) && isValidTimeKey(value.time);
-
   const save = () => {
     if (!canSave) return;
-
     const location = value.location.trim();
     addMoment({
       images: draft.images,
       originalNote: draft.note.trim(),
-      title: value.title.trim().length > 0 ? value.title.trim() : 'Moment ohne Titel',
+      title: value.title.trim().length > 0 ? value.title.trim() : t('common.untitledMoment'),
       description: value.description.trim(),
       tags: value.tags,
       date: value.date,
@@ -64,7 +63,6 @@ export default function ReviewScreen() {
       favorite: false,
       rating: value.rating,
     });
-
     resetDraft();
     router.replace('/moments');
   };
@@ -72,15 +70,10 @@ export default function ReviewScreen() {
   return (
     <SafeAreaView edges={['top']} className="bg-background flex-1">
       <ScreenHeader
-        title="Moment prüfen"
-        subtitle={
-          enrichment.usedAI
-            ? 'Von der KI vorgeschlagen — du kannst alles ändern.'
-            : 'Auf deinem Gerät erstellt — du kannst alles ändern.'
-        }
+        title={t('review.title')}
+        subtitle={enrichment.usedAI ? t('review.aiSubtitle') : t('review.deviceSubtitle')}
         onBack={() => goBackOrReplace('/capture')}
       />
-
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
@@ -91,23 +84,20 @@ export default function ReviewScreen() {
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, gap: 20 }}
         >
           <MomentGallery images={draft.images} height={240} />
-
           <MomentFields value={value} onChange={(patch) => setValue({ ...value, ...patch })} />
-
           {draft.note.trim().length > 0 ? (
             <View className="gap-1">
               <Typography.Paragraph type="body-sm" weight="medium">
-                Deine Notiz
+                {t('review.note')}
               </Typography.Paragraph>
               <Typography.Paragraph type="body-sm" color="muted">
                 {draft.note.trim()}
               </Typography.Paragraph>
             </View>
           ) : null}
-
           <Button variant="primary" size="lg" onPress={save} isDisabled={!canSave}>
             <Check size={18} color={accentForeground} />
-            <Button.Label>Moment speichern</Button.Label>
+            <Button.Label>{t('review.save')}</Button.Label>
           </Button>
         </ScrollView>
       </KeyboardAvoidingView>

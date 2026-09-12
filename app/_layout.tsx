@@ -1,5 +1,7 @@
 // oxlint-disable-next-line eslint-plugin-import/no-unassigned-import
 import '../global.css';
+// oxlint-disable-next-line eslint-plugin-import/no-unassigned-import
+import '@/lib/i18n';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
@@ -70,6 +72,7 @@ function AppStack() {
       <Stack.Screen name="review" />
       <Stack.Screen name="moment/[id]/index" />
       <Stack.Screen name="moment/[id]/edit" />
+      <Stack.Screen name="settings/language" />
       <Stack.Screen name="settings/privacy" />
       <Stack.Screen name="settings/rules" />
       <Stack.Screen name="settings/support" />

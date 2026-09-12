@@ -13,6 +13,7 @@ import {
 import { Camera, ImagePlus, MapPin } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { MomentGallery } from '@/components/MomentGallery';
 import { ProcessingState } from '@/components/ProcessingState';
@@ -24,12 +25,11 @@ import { cameraAvailable, pickPhotosFromLibrary, takePhotoWithCamera } from '@/l
 
 const MAX_PHOTOS = 10;
 
-/** Shared form for capturing a new memory. */
 export function CaptureForm() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { draft, setImages, setNote, setLocation, setDateTime, setEnrichment } = useDraftStore();
   const [accentSoftForeground, muted] = useThemeColor(['accent-soft-foreground', 'muted']);
-
   const [busy, setBusy] = useState<'camera' | 'library' | 'location' | null>(null);
   const [processing, setProcessing] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
@@ -40,7 +40,6 @@ export function CaptureForm() {
     if (askedForLocation.current) return undefined;
     askedForLocation.current = true;
     if (draft.location !== null || draft.note.length > 0) return undefined;
-
     let active = true;
     void suggestCurrentLocation().then((place) => {
       if (active && place) setLocation(place);
@@ -53,7 +52,6 @@ export function CaptureForm() {
   const addPhotos = async (mode: 'camera' | 'library') => {
     setBusy(mode);
     setHint(null);
-
     try {
       const photos =
         mode === 'camera'
@@ -61,17 +59,13 @@ export function CaptureForm() {
           : await pickPhotosFromLibrary();
       const availableSlots = Math.max(0, MAX_PHOTOS - draft.images.length);
       const accepted = photos.slice(0, availableSlots);
-
       if (accepted.length > 0) {
         setImages([...draft.images, ...accepted.map((photo) => photo.image)]);
         photoBase64s.current = [...photoBase64s.current, ...accepted.map((photo) => photo.base64)];
       }
-
-      if (photos.length > availableSlots) {
-        setHint(`Du kannst bis zu ${MAX_PHOTOS} Fotos zu einem Moment hinzufügen.`);
-      }
+      if (photos.length > availableSlots) setHint(t('capture.maxPhotos', { count: MAX_PHOTOS }));
     } catch {
-      setHint('Diese Fotos ließen sich nicht verwenden. Versuch es mit anderen Fotos.');
+      setHint(t('capture.photoError'));
     } finally {
       setBusy(null);
     }
@@ -88,7 +82,7 @@ export function CaptureForm() {
     const place = await suggestCurrentLocation();
     setBusy(null);
     if (place) setLocation(place);
-    else setHint('Der Ort ist gerade nicht verfügbar — du kannst ihn auch eintippen.');
+    else setHint(t('capture.locationError'));
   };
 
   const dateInvalid = !isValidDateKey(draft.date);
@@ -99,14 +93,11 @@ export function CaptureForm() {
   const create = async () => {
     if (!canCreate) return;
     setProcessing(true);
-
     const enrichment = await enrichMoment(
       draft,
       photoBase64s.current.filter((value): value is string => value !== null),
     );
-    if (enrichment.suggestedLocation && !draft.location) {
-      setLocation(enrichment.suggestedLocation);
-    }
+    if (enrichment.suggestedLocation && !draft.location) setLocation(enrichment.suggestedLocation);
     setEnrichment(enrichment);
     setProcessing(false);
     router.push('/review');
@@ -129,10 +120,9 @@ export function CaptureForm() {
             ) : (
               <Camera size={18} color={accentSoftForeground} />
             )}
-            <Button.Label className="text-white">Foto aufnehmen</Button.Label>
+            <Button.Label className="text-white">{t('capture.takePhoto')}</Button.Label>
           </Button>
         ) : null}
-
         <Button
           variant="secondary"
           className="flex-1"
@@ -144,36 +134,32 @@ export function CaptureForm() {
           ) : (
             <ImagePlus size={18} color={accentSoftForeground} />
           )}
-          <Button.Label className="text-white">Fotos hinzufügen</Button.Label>
+          <Button.Label className="text-white">{t('capture.addPhotos')}</Button.Label>
         </Button>
       </View>
-
       <MomentGallery images={draft.images} height={180} itemWidth={230} onRemove={removePhoto} />
-
       {draft.images.length > 0 ? (
         <Typography.Paragraph type="body-xs" color="muted">
-          {`${draft.images.length} ${draft.images.length === 1 ? 'Foto ausgewählt' : 'Fotos ausgewählt'}`}
+          {t('capture.selected', { count: draft.images.length })}
         </Typography.Paragraph>
       ) : null}
-
       <TextField>
-        <Label>Woran möchtest du dich erinnern?</Label>
+        <Label>{t('capture.prompt')}</Label>
         <TextArea
           value={draft.note}
           onChangeText={setNote}
-          placeholder="Bestes Pistazieneis nach dem Museum ..."
+          placeholder={t('capture.notePlaceholder')}
           className="min-h-28"
         />
       </TextField>
-
       <TextField>
         <View className="flex-row items-center justify-between">
-          <Label>Ort</Label>
+          <Label>{t('capture.location')}</Label>
           <Button
             variant="tertiary"
             size="sm"
             isIconOnly
-            accessibilityLabel="Aktuellen Ort verwenden"
+            accessibilityLabel={t('capture.currentLocation')}
             onPress={() => void findLocation()}
             isDisabled={busy !== null}
           >
@@ -183,40 +169,36 @@ export function CaptureForm() {
         <Input
           value={draft.location ?? ''}
           onChangeText={(value) => setLocation(value.length > 0 ? value : null)}
-          placeholder="Rom, Italien"
+          placeholder={t('capture.locationPlaceholder')}
         />
       </TextField>
-
       <View className="flex-row gap-3">
         <TextField className="flex-1" isInvalid={dateInvalid}>
-          <Label>Datum</Label>
+          <Label>{t('capture.date')}</Label>
           <Input
             value={draft.date}
             onChangeText={(date) => setDateTime(date, draft.time)}
             placeholder="2026-09-12"
             autoCapitalize="none"
           />
-          <FieldError>Format: 2026-09-12</FieldError>
+          <FieldError>{t('capture.dateFormat')}</FieldError>
         </TextField>
-
         <TextField className="w-28" isInvalid={timeInvalid}>
-          <Label>Uhrzeit</Label>
+          <Label>{t('capture.time')}</Label>
           <Input
             value={draft.time}
             onChangeText={(time) => setDateTime(draft.date, time)}
             placeholder="16:40"
             autoCapitalize="none"
           />
-          <FieldError>Format: 16:40</FieldError>
+          <FieldError>{t('capture.timeFormat')}</FieldError>
         </TextField>
       </View>
-
       {hint ? (
         <Typography.Paragraph type="body-sm" color="muted">
           {hint}
         </Typography.Paragraph>
       ) : null}
-
       <Button
         variant="primary"
         size="lg"
@@ -224,12 +206,11 @@ export function CaptureForm() {
         isDisabled={!canCreate}
         className="mt-1"
       >
-        <Button.Label>Speichern</Button.Label>
+        <Button.Label>{t('common.save')}</Button.Label>
       </Button>
-
       {aiEnabled ? null : (
         <Typography.Paragraph type="body-xs" color="muted" align="center">
-          Ohne KI-Schlüssel: Titel und Stichwörter entstehen direkt auf deinem Gerät.
+          {t('capture.offlineAI')}
         </Typography.Paragraph>
       )}
     </View>

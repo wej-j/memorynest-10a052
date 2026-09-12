@@ -3,12 +3,14 @@ import { StatusBar } from 'expo-status-bar';
 import { useThemeColor } from 'heroui-native';
 import { Home, Images, Plus, Search, User } from 'lucide-react-native';
 import { Platform, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 export const unstable_settings = {
   initialRouteName: 'moments',
 };
 
 export default function TabLayout() {
+  const { t } = useTranslation();
   const [background, backgroundSecondary, border, accent, accentForeground, muted] = useThemeColor([
     'background',
     'background-secondary',
@@ -43,23 +45,21 @@ export default function TabLayout() {
         <Tabs.Screen
           name="moments"
           options={{
-            title: 'Home',
+            title: t('tabs.home'),
             tabBarIcon: ({ color, size }) => <Home color={color} size={size ?? 22} />,
           }}
         />
-
         <Tabs.Screen
           name="photos"
           options={{
-            title: 'Fotos',
+            title: t('tabs.photos'),
             tabBarIcon: ({ color, size }) => <Images color={color} size={size ?? 22} />,
           }}
         />
-
         <Tabs.Screen
           name="capture"
           options={{
-            title: 'Neu',
+            title: t('tabs.new'),
             tabBarLabel: () => null,
             tabBarIcon: () => (
               <View
@@ -71,19 +71,17 @@ export default function TabLayout() {
             ),
           }}
         />
-
         <Tabs.Screen
           name="search"
           options={{
-            title: 'Suche',
+            title: t('tabs.search'),
             tabBarIcon: ({ color, size }) => <Search color={color} size={size ?? 22} />,
           }}
         />
-
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Profil',
+            title: t('tabs.profile'),
             tabBarIcon: ({ color, size }) => <User color={color} size={size ?? 22} />,
           }}
         />
