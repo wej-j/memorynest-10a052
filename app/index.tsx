@@ -6,7 +6,6 @@ import { ChevronUp } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { PanResponder, useWindowDimensions, View } from 'react-native';
 
-import { BrandLogo } from '@/components/BrandLogo';
 import { FilmReel, type ReelFrame } from '@/components/FilmReel';
 import { StepDots } from '@/components/StepDots';
 import { LinearGradient } from '@/components/ui/primitives/LinearGradient';
@@ -14,6 +13,7 @@ import { SEED_PHOTO_SOURCES } from '@/lib/images';
 import { randomWebPhotos, shuffle } from '@/lib/reelPhotos';
 
 const HERO = require('@/assets/brand/start-hero.png');
+const REMORY_LOGO = require('@/assets/brand/remory-logo.png');
 
 /**
  * Start page (step 1 of 3): brand, tagline and the moving film reel.
@@ -73,16 +73,12 @@ export default function StartScreen() {
       />
 
       <View className="pt-safe-offset-8 pb-safe-offset-6 flex-1 items-center px-6">
-        <View className="items-center">
-          <BrandLogo size={68} />
-          <Typography.Heading type="h2" align="center" className="mt-2">
-            Remory
-          </Typography.Heading>
-        </View>
-
-        <Typography.Paragraph type="body-sm" color="muted" align="center" className="mt-2 max-w-64">
-          Remember the moments that matter.
-        </Typography.Paragraph>
+        <Image
+          source={REMORY_LOGO}
+          accessibilityLabel="Remory – Remember. Relive. Remory."
+          contentFit="contain"
+          style={{ width: Math.min(width - 48, 280), height: Math.min(width - 48, 280) }}
+        />
 
         <View className="mt-7 w-full gap-3">
           <FilmReel frames={topFrames} direction="left" frameWidth={104} frameHeight={74} />
