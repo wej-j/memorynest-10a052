@@ -1,27 +1,58 @@
-import { Stack } from 'expo-router';
-import { Text } from 'heroui-native';
-import { View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Button, Typography, useThemeColor } from 'heroui-native';
+import { Plus, Sparkles } from 'lucide-react-native';
+import { FlatList, View } from 'react-native';
 
-export default function Home() {
-  return <ScreenContent />;
-}
+import { MomentCard } from '@/components/MomentCard';
+import { EmptyState } from '@/components/EmptyState';
+import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
+import { useMomentsStore } from '@/lib/momentsStore';
 
-function ScreenContent() {
+export default function MomentsScreen() {
+  const router = useRouter();
+  const moments = useMomentsStore((state) => state.moments);
+  const [accentForeground] = useThemeColor(['accent-foreground']);
+
   return (
-    <View className="bg-background p-safe flex basis-full flex-col">
-      <Stack.Screen
-        options={{
-          title: 'Home',
-        }}
+    <SafeAreaView edges={['top']} className="bg-background flex-1">
+      <FlatList
+        data={moments}
+        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32, gap: 16 }}
+        ListHeaderComponent={
+          <View className="gap-4 pt-2">
+            <View className="gap-1">
+              <Typography.Heading type="h2">Collecting Moments</Typography.Heading>
+              <Typography.Paragraph type="body-sm" color="muted">
+                Your memories, easier to keep.
+              </Typography.Paragraph>
+            </View>
+
+            {moments.length > 0 ? (
+              <Button variant="primary" onPress={() => router.push('/capture')}>
+                <Plus size={18} color={accentForeground} />
+                <Button.Label>New moment</Button.Label>
+              </Button>
+            ) : null}
+          </View>
+        }
+        ListEmptyComponent={
+          <EmptyState
+            icon={Sparkles}
+            title="Your moments will live here."
+            body="Capture something you don't want to forget — a photo, a few words, or both."
+            actionLabel="Create your first moment"
+            onAction={() => router.push('/capture')}
+          />
+        }
+        renderItem={({ item }) => (
+          <MomentCard
+            moment={item}
+            onPress={() => router.push({ pathname: '/moment/[id]', params: { id: item.id } })}
+          />
+        )}
       />
-      <View className="flex-1 items-center justify-center">
-        <Text.Heading type="h2" align="center" className="mb-4">
-          Welcome to Your App
-        </Text.Heading>
-        <Text.Paragraph align="center" color="muted">
-          This is your starting point. Start building something amazing!
-        </Text.Paragraph>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }

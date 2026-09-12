@@ -1,0 +1,123 @@
+import type { Moment } from '@/lib/types';
+
+function seed(
+  id: string,
+  assetKey: string | null,
+  date: string,
+  time: string,
+  location: string | null,
+  title: string,
+  description: string,
+  originalNote: string,
+  tags: string[],
+): Moment {
+  const createdAt = new Date(`${date}T${time}:00`).toISOString();
+  return {
+    id,
+    image: assetKey ? { source: 'asset', assetKey } : null,
+    originalNote,
+    title,
+    description,
+    tags,
+    date,
+    time,
+    location,
+    createdAt,
+    updatedAt: createdAt,
+  };
+}
+
+/**
+ * Demo memories so the app feels lived-in on first launch and natural-language
+ * search has something convincing to find.
+ */
+export const SEED_MOMENTS: Moment[] = [
+  seed(
+    'seed-gelato-rome',
+    'gelato-rome',
+    '2026-09-12',
+    '16:40',
+    'Rome, Italy',
+    'Pistachio Gelato After the Museum',
+    'After visiting the museum we walked until we found a tiny gelateria on a side street. The pistachio was so good we went back for a second cup. It became one of our favourite food memories from Rome.',
+    'best pistachio ice cream after museum',
+    ['Rome', 'Italy', 'gelato', 'food', 'museum'],
+  ),
+  seed(
+    'seed-pasta-class',
+    'pasta-class',
+    '2026-09-10',
+    '19:15',
+    'Bologna, Italy',
+    'Making Tagliatelle by Hand',
+    'A small kitchen, too much flour everywhere, and a nonna who kept fixing our dough. We ate everything we made and it tasted better because of it.',
+    'pasta class in bologna, flour everywhere',
+    ['Bologna', 'Italy', 'pasta', 'cooking', 'food'],
+  ),
+  seed(
+    'seed-sunset-sea',
+    'sunset-sea',
+    '2026-09-08',
+    '20:05',
+    'Positano, Italy',
+    'Sunset Walk by the Sea',
+    'We walked along the coast path just as the sun dropped into the water. Nobody said much. The whole sky turned peach and the sea went completely quiet.',
+    'sunset walk by the sea, quiet',
+    ['sunset', 'beach', 'walk', 'travel', 'Italy'],
+  ),
+  seed(
+    'seed-castle-hill',
+    'castle-hill',
+    '2026-08-23',
+    '11:30',
+    'Edinburgh, Scotland',
+    'The Castle on the Hill',
+    'We climbed up in the drizzle and the clouds broke open right as we reached the top. The whole city was grey and gold below us.',
+    'castle in the rain, view over the city',
+    ['castle', 'Edinburgh', 'Scotland', 'history', 'travel'],
+  ),
+  seed(
+    'seed-coffee-shop',
+    'coffee-shop',
+    '2026-07-05',
+    '08:50',
+    'Lisbon, Portugal',
+    'Tiny Coffee Shop We Loved',
+    'Four tables, one very serious barista, and the best flat white of the trip. We came back every morning of the week for the same seat by the window.',
+    'small cafe we went every morning, amazing coffee',
+    ['coffee', 'café', 'breakfast', 'Lisbon', 'Portugal'],
+  ),
+  seed(
+    'seed-market-flowers',
+    'market-flowers',
+    '2026-06-14',
+    '09:20',
+    'Copenhagen, Denmark',
+    'Saturday Morning Flower Market',
+    'Buckets of tulips and dahlias on the pavement, everyone still half asleep. We bought far more flowers than we could carry home.',
+    'flower market saturday morning',
+    ['market', 'flowers', 'Copenhagen', 'morning', 'city'],
+  ),
+  seed(
+    'seed-paris-bookshop',
+    null,
+    '2026-05-02',
+    '15:10',
+    'Paris, France',
+    'Rainy Afternoon in a Bookshop',
+    'It rained hard so we hid in a bookshop for two hours. I read the first chapter of three different novels and bought none of them.',
+    'rainy day, hid in a bookshop for hours',
+    ['Paris', 'France', 'books', 'rain', 'city'],
+  ),
+  seed(
+    'seed-apple-cake',
+    null,
+    '2026-04-19',
+    '14:00',
+    'Munich, Germany',
+    "Grandma's Apple Cake",
+    'She refused to write the recipe down again, so I watched and took notes. The kitchen smelled like cinnamon all afternoon.',
+    'oma made her apple cake, wrote down the recipe',
+    ['family', 'baking', 'apple cake', 'Munich', 'food'],
+  ),
+];

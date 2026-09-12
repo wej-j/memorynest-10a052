@@ -10,12 +10,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: 'MemoryNest',
-    slug: 'memorynest',
+    name: 'Collecting Moments',
+    slug: 'collecting-moments',
     version: process.env.BILT_APP_VERSION ?? '1.0.0',
     orientation: 'portrait',
-    userInterfaceStyle: 'automatic',
-    scheme: 'memorynest',
+    userInterfaceStyle: 'light',
+    scheme: 'collectingmoments',
     runtimeVersion: {
       policy: 'appVersion',
     },
@@ -25,10 +25,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         ITSAppUsesNonExemptEncryption: false,
       },
       supportsTablet: true,
-      bundleIdentifier: process.env.BILT_IOS_BUNDLE_ID ?? 'me.bilt.memorynest',
+      bundleIdentifier: process.env.BILT_IOS_BUNDLE_ID ?? 'me.bilt.collectingmoments',
     },
     android: {
-      package: process.env.BILT_ANDROID_PACKAGE ?? 'me.bilt.memorynest',
+      package: process.env.BILT_ANDROID_PACKAGE ?? 'me.bilt.collectingmoments',
     },
     web: {
       bundler: 'metro',
@@ -40,7 +40,26 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     extra: {
       appStoreAppId: process.env.BILT_APP_STORE_APP_ID,
     },
-    plugins: ['expo-router', 'expo-font', ...nativePlugins],
+    plugins: [
+      'expo-router',
+      'expo-font',
+      'expo-image',
+      [
+        'expo-image-picker',
+        {
+          photosPermission: 'Collecting Moments uses your photos so you can add them to a moment.',
+          cameraPermission: 'Collecting Moments uses the camera to capture a moment right away.',
+        },
+      ],
+      [
+        'expo-location',
+        {
+          locationWhenInUsePermission:
+            'Collecting Moments can suggest where a moment happened. Location is always optional.',
+        },
+      ],
+      ...nativePlugins,
+    ],
     experiments: {
       typedRoutes: true,
       reactCompiler: true,
