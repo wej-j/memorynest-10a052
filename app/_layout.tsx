@@ -64,6 +64,8 @@ function AppStack() {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="start/capture" />
+      <Stack.Screen name="start/collection" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="review" />
       <Stack.Screen name="moment/[id]/index" />
