@@ -56,6 +56,18 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             backgroundColor: '#120D1A',
             image: './assets/brand/remory-logo.png',
           },
+          ios: {
+            backgroundColor: '#120D1A',
+            image: './assets/brand/remory-logo.png',
+            imageWidth: 280,
+            resizeMode: 'contain',
+          },
+          android: {
+            backgroundColor: '#120D1A',
+            image: './assets/brand/remory-logo.png',
+            imageWidth: 180,
+            resizeMode: 'contain',
+          },
         },
       ],
       [
