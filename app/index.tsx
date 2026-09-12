@@ -6,17 +6,14 @@ import { ChevronUp } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { PanResponder, useWindowDimensions, View } from 'react-native';
 
-import { FilmReel, type ReelFrame } from '@/components/FilmReel';
 import { StepDots } from '@/components/StepDots';
 import { LinearGradient } from '@/components/ui/primitives/LinearGradient';
-import { SEED_PHOTO_SOURCES } from '@/lib/images';
-import { randomWebPhotos, shuffle } from '@/lib/reelPhotos';
 
 const HERO: ImageSource = require('@/assets/brand/start-hero.png');
 const REMORY_LOGO = require('@/assets/brand/remory-logo.png');
 
 /**
- * Start page (step 1 of 3): brand, tagline and the moving film reel.
+ * Start page (step 1 of 3): brand introduction and swipe-up navigation.
  * Swipe upward to continue to the add-memory page.
  */
 export default function StartScreen() {
@@ -43,17 +40,6 @@ export default function StartScreen() {
     [openCapture],
   );
 
-  // A fresh set of random web photos per app start, plus the bundled
-  // photography so the reel is never empty when the device is offline.
-  const topFrames = useMemo<ReelFrame[]>(
-    () => randomWebPhotos(10).map((url) => ({ key: `top-${url}`, source: url })),
-    [],
-  );
-  const bottomFrames = useMemo<ReelFrame[]>(() => {
-    const mixed = shuffle([...randomWebPhotos(6), ...SEED_PHOTO_SOURCES]);
-    return mixed.map((source, index) => ({ key: `bottom-${index}`, source }));
-  }, []);
-
   return (
     <View
       className="bg-background flex-1"
@@ -79,17 +65,6 @@ export default function StartScreen() {
           contentFit="contain"
           style={{ width: Math.min(width - 48, 280), height: Math.min(width - 48, 280) }}
         />
-
-        <View className="mt-7 w-full gap-3">
-          <FilmReel frames={topFrames} direction="left" frameWidth={104} frameHeight={74} />
-          <FilmReel
-            frames={bottomFrames}
-            direction="right"
-            frameWidth={84}
-            frameHeight={60}
-            perFrameMs={2800}
-          />
-        </View>
 
         <View className="flex-1" />
 
