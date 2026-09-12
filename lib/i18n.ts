@@ -22,8 +22,8 @@ const de = {
   tabs: { home: 'Home', photos: 'Fotos', new: 'Neu', search: 'Suche', profile: 'Profil' },
   start: {
     addPhoto: 'Zum Foto hinzufügen',
-    swipe: 'Nach oben wischen, um ein Foto hinzuzufügen',
-    newMoment: 'Neuer Moment',
+    swipe: 'Nach oben wischen, um einen Moment festzuhalten',
+    newMoment: 'Moment festhalten',
     skip: 'Überspringen',
     yourMoments: 'Deine Momente',
     movingPhotos: 'Deine Fotos in Bewegung',
@@ -195,8 +195,8 @@ const en = {
   tabs: { home: 'Home', photos: 'Photos', new: 'New', search: 'Search', profile: 'Profile' },
   start: {
     addPhoto: 'Add a photo',
-    swipe: 'Swipe up to add a photo',
-    newMoment: 'New moment',
+    swipe: 'Swipe up to capture a moment',
+    newMoment: 'Capture a moment',
     skip: 'Skip',
     yourMoments: 'Your moments',
     movingPhotos: 'Your photos in motion',
