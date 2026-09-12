@@ -52,7 +52,7 @@ export default function StartCollectionScreen() {
             <Button.Label>{t('common.search')}</Button.Label>
           </Button>
           <Button variant="secondary" onPress={() => router.replace('/moments')}>
-            <Button.Label>{t('start.openAll')}</Button.Label>
+            <Button.Label className="text-white">{t('start.openAll')}</Button.Label>
           </Button>
         </View>
       </ScrollView>
