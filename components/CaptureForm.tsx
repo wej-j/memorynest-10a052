@@ -129,7 +129,7 @@ export function CaptureForm() {
             ) : (
               <Camera size={18} color={accentSoftForeground} />
             )}
-            <Button.Label>Foto aufnehmen</Button.Label>
+            <Button.Label className="text-white">Foto aufnehmen</Button.Label>
           </Button>
         ) : null}
 
@@ -144,7 +144,7 @@ export function CaptureForm() {
           ) : (
             <ImagePlus size={18} color={accentSoftForeground} />
           )}
-          <Button.Label>Fotos hinzufügen</Button.Label>
+          <Button.Label className="text-white">Fotos hinzufügen</Button.Label>
         </Button>
       </View>
 
