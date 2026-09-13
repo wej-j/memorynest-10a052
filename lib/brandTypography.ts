@@ -2,10 +2,10 @@ import { StyleSheet } from 'react-native';
 
 /**
  * Canonical font families for Remory.
- * Fredoka is reserved for the brand wordmark; interface copy stays in Inter.
+ * Comfortaa is reserved for the soft geometric wordmark; interface copy stays in Inter.
  */
 export const brandFontFamilies = {
-  wordmark: 'Fredoka_700Bold',
+  wordmark: 'Comfortaa_700Bold',
   uiRegular: 'Inter_400Regular',
   uiMedium: 'Inter_500Medium',
   uiSemibold: 'Inter_600SemiBold',

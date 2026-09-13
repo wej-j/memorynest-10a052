@@ -24,8 +24,8 @@ export function BrandWordmark({ size = 26, color }: BrandWordmarkProps) {
           {
             fontSize: size,
             lineHeight: size * 1.18,
-            letterSpacing: -size * 0.035,
-            marginLeft: -size * 0.06,
+            letterSpacing: -size * 0.045,
+            marginLeft: -size * 0.08,
             ...(color ? { color } : null),
           },
         ]}

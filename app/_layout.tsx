@@ -4,7 +4,7 @@ import '../global.css';
 import '@/lib/i18n';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Fredoka_700Bold } from '@expo-google-fonts/fredoka';
+import { Comfortaa_700Bold } from '@expo-google-fonts/comfortaa';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -85,7 +85,7 @@ function AppStack() {
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    Fredoka_700Bold,
+    Comfortaa_700Bold,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
@@ -116,29 +116,20 @@ export default function RootLayout() {
     };
   }, []);
 
-  // Inject Google Fonts link tag for web to ensure fonts load through proxy
-  // Also register font family names as fallback if expo-font fails
+  // Inject Google Fonts for reliable web fallbacks when expo-font is unavailable.
   useEffect(() => {
     if (Platform.OS === 'web') {
-      // Check if link already exists
-      const existingLink = document.querySelector(
-        'link[href*="fonts.googleapis.com/css2?family=Inter"]',
-      );
+      const existingLink = document.querySelector('link[data-remory-fonts="true"]');
 
       if (!existingLink) {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
+        link.dataset.remoryFonts = 'true';
         link.href =
-          'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
+          'https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Inter:wght@400;500;600;700&display=swap';
         link.crossOrigin = 'anonymous';
         document.head.appendChild(link);
       }
-
-      // Note: The @import in global.css and the link tag above ensure Inter font loads
-      // expo-font will register the font family names (Inter_400Regular, etc.)
-      // If expo-font fails due to proxy issues, the fonts should still be available
-      // via the direct Google Fonts CDN link, though the specific font family names
-      // might not be registered. The app should still render with Inter font.
     }
   }, []);
 
