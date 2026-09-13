@@ -16,6 +16,7 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 
 import { LinearGradient } from '@/components/ui/primitives/LinearGradient';
+import { brandTypography } from '@/lib/brandTypography';
 import { randomWebPhotos, shuffle } from '@/lib/reelPhotos';
 
 const SWIPE_DISTANCE = 48;
@@ -216,11 +217,21 @@ export default function StartScreen() {
         <View className={compactHeight ? 'mt-3 items-center' : 'mt-6 items-center'}>
           <Text
             accessibilityRole="header"
-            style={[styles.wordmark, compactHeight && styles.compactWordmark]}
+            style={[
+              brandTypography.wordmark,
+              styles.wordmark,
+              compactHeight && styles.compactWordmark,
+            ]}
           >
             remory
           </Text>
-          <Text style={[styles.tagline, compactHeight && styles.compactTagline]}>
+          <Text
+            style={[
+              brandTypography.tagline,
+              styles.tagline,
+              compactHeight && styles.compactTagline,
+            ]}
+          >
             Remember. Relive. Remory.
           </Text>
         </View>
@@ -266,10 +277,8 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     color: '#F8E9FF',
-    fontFamily: 'Fredoka_700Bold',
     fontSize: 72,
     lineHeight: 82,
-    letterSpacing: -2.5,
     textShadowColor: '#D99BFF',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 15,
@@ -280,11 +289,8 @@ const styles = StyleSheet.create({
   },
   tagline: {
     color: '#E4B7FF',
-    fontFamily: 'Inter',
     fontSize: 20,
     lineHeight: 28,
-    fontWeight: '500',
-    letterSpacing: 0.2,
     textShadowColor: '#C983F8',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 8,
