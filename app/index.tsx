@@ -1,11 +1,21 @@
 import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import Animated, {
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 
 import { LinearGradient } from '@/components/ui/primitives/LinearGradient';
+import { randomWebPhotos, shuffle } from '@/lib/reelPhotos';
 
 const SWIPE_DISTANCE = 48;
 const MAX_STAGE_WIDTH = 560;
@@ -16,16 +26,104 @@ const PHOTOS: ImageSource[] = [
   require('@/assets/seed/coffee-shop.png'),
   require('@/assets/seed/castle-hill.png'),
   require('@/assets/seed/market-flowers.png'),
+  require('@/assets/seed/pasta-class.png'),
 ];
 
-type PhotoLayout = {
-  height: number;
-  left: number;
+const CARD_WIDTHS = [82, 142, 96, 142, 82, 120] as const;
+const CARD_HEIGHTS = [61, 104, 72, 104, 61, 88] as const;
+const CARD_TOPS = [25, 12, 24, 12, 25, 18] as const;
+const REEL_DURATION = 18_000;
+
+type ReelPhoto = {
+  fallback: ImageSource;
+  key: string;
   source: ImageSource;
-  top: number;
-  width: number;
-  zIndex: number;
 };
+
+type MovingPhotoReelProps = {
+  stageWidth: number;
+};
+
+function MovingPhotoReel({ stageWidth }: MovingPhotoReelProps) {
+  const reduceMotion = useReducedMotion();
+  const progress = useSharedValue(0);
+  const scale = stageWidth / 390;
+  const gap = -14 * scale;
+  const reelWidth = useMemo(
+    () => CARD_WIDTHS.reduce((total, cardWidth) => total + cardWidth * scale + gap, 0),
+    [gap, scale],
+  );
+  const [photos] = useState<ReelPhoto[]>(() => {
+    const fallbacks = shuffle(PHOTOS);
+    const remotePhotos = randomWebPhotos(fallbacks.length);
+
+    return fallbacks.map((fallback, index) => {
+      const remotePhoto = remotePhotos[index];
+
+      return {
+        fallback,
+        key: `start-photo-${index}`,
+        source: remotePhoto ? { uri: remotePhoto } : fallback,
+      };
+    });
+  });
+
+  useEffect(() => {
+    progress.set(0);
+    if (!reduceMotion) {
+      progress.set(
+        withRepeat(withTiming(1, { duration: REEL_DURATION, easing: Easing.linear }), -1, false),
+      );
+    }
+
+    return () => cancelAnimation(progress);
+  }, [progress, reduceMotion]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: -progress.value * reelWidth }],
+  }));
+
+  return (
+    <View style={{ width: stageWidth, height: stageWidth * 0.36, overflow: 'hidden' }}>
+      <Animated.View
+        style={[
+          styles.reelTrack,
+          { width: reelWidth * 2, height: stageWidth * 0.36 },
+          animatedStyle,
+        ]}
+      >
+        {[0, 1].map((copy) => (
+          <View key={copy} style={[styles.reelGroup, { width: reelWidth }]}>
+            {photos.map((photo, index) => (
+              <View
+                key={`${copy}-${photo.key}`}
+                style={[
+                  styles.photoFrame,
+                  {
+                    width: CARD_WIDTHS[index] * scale,
+                    height: CARD_HEIGHTS[index] * scale,
+                    marginRight: gap,
+                    marginTop: CARD_TOPS[index] * scale,
+                    zIndex: index % 2 === 0 ? 1 : 2,
+                  },
+                ]}
+              >
+                <Image
+                  source={photo.source}
+                  placeholder={photo.fallback}
+                  style={{ width: '100%', height: '100%' }}
+                  contentFit="cover"
+                  cachePolicy="disk"
+                  transition={350}
+                />
+              </View>
+            ))}
+          </View>
+        ))}
+      </Animated.View>
+    </View>
+  );
+}
 
 export default function StartScreen() {
   const router = useRouter();
@@ -39,33 +137,6 @@ export default function StartScreen() {
 
   const stageWidth = Math.min(width - 24, MAX_STAGE_WIDTH);
   const compactHeight = height < 680;
-  const photoLayouts = useMemo<PhotoLayout[]>(() => {
-    const scale = stageWidth / 390;
-    const center = stageWidth / 2;
-    const makeLayout = (
-      source: ImageSource,
-      offset: number,
-      cardWidth: number,
-      cardHeight: number,
-      top: number,
-      zIndex: number,
-    ): PhotoLayout => ({
-      source,
-      width: cardWidth * scale,
-      height: cardHeight * scale,
-      left: center + offset * scale - (cardWidth * scale) / 2,
-      top: top * scale,
-      zIndex,
-    });
-
-    return [
-      makeLayout(PHOTOS[0], -166, 82, 61, 26, 1),
-      makeLayout(PHOTOS[1], -96, 142, 104, 15, 3),
-      makeLayout(PHOTOS[2], 0, 96, 72, 23, 2),
-      makeLayout(PHOTOS[3], 96, 142, 104, 15, 4),
-      makeLayout(PHOTOS[4], 166, 82, 61, 26, 1),
-    ];
-  }, [stageWidth]);
 
   return (
     <View
@@ -101,31 +172,7 @@ export default function StartScreen() {
         style={{ top: compactHeight ? '33%' : '40%' }}
         pointerEvents="none"
       >
-        <View style={{ width: stageWidth, height: stageWidth * 0.36 }}>
-          {photoLayouts.map((photo, index) => (
-            <View
-              // oxlint-disable-next-line eslint/no-array-index-key -- fixed decorative photo composition
-              key={index}
-              style={[
-                styles.photoFrame,
-                {
-                  width: photo.width,
-                  height: photo.height,
-                  left: photo.left,
-                  top: photo.top,
-                  zIndex: photo.zIndex,
-                },
-              ]}
-            >
-              <Image
-                source={photo.source}
-                style={{ width: '100%', height: '100%' }}
-                contentFit="cover"
-                transition={220}
-              />
-            </View>
-          ))}
-        </View>
+        <MovingPhotoReel stageWidth={stageWidth} />
 
         <View className={compactHeight ? 'mt-3 items-center' : 'mt-6 items-center'}>
           <Text
@@ -151,8 +198,13 @@ export default function StartScreen() {
 }
 
 const styles = StyleSheet.create({
+  reelTrack: {
+    flexDirection: 'row',
+  },
+  reelGroup: {
+    flexDirection: 'row',
+  },
   photoFrame: {
-    position: 'absolute',
     overflow: 'hidden',
     borderWidth: 4,
     borderColor: '#CDA5F4',

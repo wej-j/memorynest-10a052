@@ -4,8 +4,8 @@
  * The reel deliberately shows photos the user has never seen before, so it
  * pulls random web photography instead of app content. Picsum serves a random
  * (Unsplash-sourced) photo per seed, so a fresh set of seeds means a fresh
- * reel on every app start. Offline the reel simply stays empty of remote
- * frames and falls back to the bundled demo photography.
+ * reel on every app start. Bundled demo photography is shown immediately while
+ * the web photos load, and remains visible when the device is offline.
  */
 
 const FRAME_WIDTH = 480;
