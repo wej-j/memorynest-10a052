@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { Button, Typography, useThemeColor } from 'heroui-native';
-import { Plus, Search, Sparkles } from 'lucide-react-native';
+import { Search, Sparkles } from 'lucide-react-native';
 import { FlatList, Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -15,7 +15,7 @@ export default function MomentsScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const moments = useMomentsStore((state) => state.moments);
-  const [accentForeground, foreground] = useThemeColor(['accent-foreground', 'foreground']);
+  const foreground = useThemeColor('foreground');
 
   const openMoment = (id: string) => router.push({ pathname: '/moment/[id]', params: { id } });
 
@@ -48,9 +48,8 @@ export default function MomentsScreen() {
             </View>
             <MomentFilmstrip moments={moments} onSelect={openMoment} />
             {moments.length > 0 ? (
-              <Button variant="primary" onPress={() => router.push('/capture')}>
-                <Plus size={18} color={accentForeground} />
-                <Button.Label>{t('home.new')}</Button.Label>
+              <Button variant="primary" onPress={() => router.replace('/moments')}>
+                <Button.Label>{t('tabs.home')}</Button.Label>
               </Button>
             ) : null}
           </View>
