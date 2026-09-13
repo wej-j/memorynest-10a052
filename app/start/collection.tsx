@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Button, Typography, useThemeColor } from 'heroui-native';
-import { Images, Search } from 'lucide-react-native';
+import { Button, SearchField, Typography, useThemeColor } from 'heroui-native';
+import { Check, Images } from 'lucide-react-native';
+import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -18,8 +19,16 @@ export default function StartCollectionScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const moments = useMomentsStore((state) => state.moments);
+  const [query, setQuery] = useState('');
   const [accentForeground] = useThemeColor(['accent-foreground']);
   const openMoment = (id: string) => router.push({ pathname: '/moment/[id]', params: { id } });
+  const submitSearch = () => {
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery) return;
+
+    router.replace({ pathname: '/search', params: { q: trimmedQuery } });
+  };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="bg-background flex-1">
@@ -48,11 +57,33 @@ export default function StartCollectionScreen() {
           <EmptyState icon={Images} title={t('start.noPhotos')} body={t('start.noPhotosBody')} />
         )}
         <View className="gap-3">
-          <Button variant="primary" onPress={() => router.replace('/search')}>
-            <Search size={18} color={accentForeground} />
-            <Button.Label>{t('common.search')}</Button.Label>
-          </Button>
-          <Button variant="secondary" onPress={() => router.replace('/moments')}>
+          <View className="flex-row items-center gap-2">
+            <SearchField value={query} onChange={setQuery} className="flex-1">
+              <SearchField.Group>
+                <SearchField.SearchIcon />
+                <SearchField.Input
+                  placeholder={t('search.placeholder')}
+                  returnKeyType="search"
+                  onSubmitEditing={submitSearch}
+                />
+                <SearchField.ClearButton />
+              </SearchField.Group>
+            </SearchField>
+            <Button
+              isIconOnly
+              variant="primary"
+              isDisabled={!query.trim()}
+              accessibilityLabel={t('common.search')}
+              onPress={submitSearch}
+            >
+              <Check size={20} color={accentForeground} />
+            </Button>
+          </View>
+          <Button
+            variant="secondary"
+            className="self-end"
+            onPress={() => router.replace('/moments')}
+          >
             <Button.Label className="text-white">{t('start.openAll')}</Button.Label>
           </Button>
         </View>
