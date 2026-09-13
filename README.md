@@ -21,7 +21,6 @@ Users create a **Moment** and decide what they want to add:
 - Photos
 - Keywords
 - Longer text
-- Links
 - Date and time
 - Location
 - Ratings
