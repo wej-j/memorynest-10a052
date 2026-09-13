@@ -4,6 +4,7 @@ import '../global.css';
 import '@/lib/i18n';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Fredoka_700Bold } from '@expo-google-fonts/fredoka';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -84,6 +85,7 @@ function AppStack() {
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
+    Fredoka_700Bold,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,

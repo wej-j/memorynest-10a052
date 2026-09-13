@@ -2,7 +2,7 @@ import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
@@ -266,15 +266,10 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     color: '#F8E9FF',
-    fontFamily: Platform.select({
-      ios: 'Arial Rounded MT Bold',
-      android: 'sans-serif-rounded',
-      default: 'Inter',
-    }),
+    fontFamily: 'Fredoka_700Bold',
     fontSize: 72,
     lineHeight: 82,
-    fontWeight: '600',
-    letterSpacing: -4,
+    letterSpacing: -2.5,
     textShadowColor: '#D99BFF',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 15,

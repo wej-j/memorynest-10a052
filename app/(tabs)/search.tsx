@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { EmptyState } from '@/components/EmptyState';
 import { MomentCard } from '@/components/MomentCard';
+import { MomentFilmstrip } from '@/components/MomentFilmstrip';
 import { SafeAreaView } from '@/components/ui/primitives/SafeAreaView';
 import { askMemories } from '@/lib/ai';
 import { useMomentsStore } from '@/lib/momentsStore';
@@ -80,6 +81,14 @@ export default function SearchScreen() {
             <Typography.Paragraph type="body-sm" color="muted">
               {t('search.intro')}
             </Typography.Paragraph>
+          </View>
+          <View className="pb-5">
+            <MomentFilmstrip
+              moments={moments}
+              onSelect={(momentId) =>
+                router.push({ pathname: '/moment/[id]', params: { id: momentId } })
+              }
+            />
           </View>
           <View className="gap-3">
             <SearchField value={query} onChange={setQuery}>
