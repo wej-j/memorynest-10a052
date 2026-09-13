@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Button, SearchField, Typography, useThemeColor } from 'heroui-native';
+import { Button, SearchField, useThemeColor } from 'heroui-native';
 import { Check, Images } from 'lucide-react-native';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
@@ -45,12 +45,6 @@ export default function StartCollectionScreen() {
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40, gap: 20 }}
       >
         <StepDots index={2} />
-        <View className="gap-1">
-          <Typography.Heading type="h3">{t('start.movingPhotos')}</Typography.Heading>
-          <Typography.Paragraph type="body-sm" color="muted">
-            {t('start.movingPhotosBody')}
-          </Typography.Paragraph>
-        </View>
         {moments.some((moment) => moment.images.length > 0) ? (
           <MomentFilmstrip moments={moments} onSelect={openMoment} />
         ) : (
