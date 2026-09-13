@@ -120,12 +120,10 @@ https://app.bilt.me/agent/10a052a8-809f-42db-9c31-4f87eabeb01d
 `10a052a8-809f-42db-9c31-4f87eabeb01d`
 
 **GitHub Repository:**
+
 git clone https://github.com/your-team/remory.git
-
 cd remory
-
 npm install
-
 npx expo start
 
 ## The Vision in One Sentence
