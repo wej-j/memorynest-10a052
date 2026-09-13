@@ -1,11 +1,12 @@
 import { Image, type ImageSource } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, {
   cancelAnimation,
   Easing,
+  type SharedValue,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -29,10 +30,8 @@ const PHOTOS: ImageSource[] = [
   require('@/assets/seed/pasta-class.png'),
 ];
 
-const CARD_WIDTHS = [82, 142, 96, 142, 82, 120] as const;
-const CARD_HEIGHTS = [61, 104, 72, 104, 61, 88] as const;
-const CARD_TOPS = [25, 12, 24, 12, 25, 18] as const;
-const REEL_DURATION = 18_000;
+const CAROUSEL_DURATION = 16_000;
+const CARD_ASPECT_RATIO = 1.36;
 
 type ReelPhoto = {
   fallback: ImageSource;
@@ -40,19 +39,74 @@ type ReelPhoto = {
   source: ImageSource;
 };
 
-type MovingPhotoReelProps = {
+type OrbitingPhotoProps = {
+  index: number;
+  photo: ReelPhoto;
+  progress: SharedValue<number>;
+  stageWidth: number;
+  total: number;
+};
+
+function OrbitingPhoto({ index, photo, progress, stageWidth, total }: OrbitingPhotoProps) {
+  const scaleFactor = stageWidth / 390;
+  const cardWidth = 112 * scaleFactor;
+  const cardHeight = cardWidth / CARD_ASPECT_RATIO;
+  const stageHeight = stageWidth * 0.52;
+  const radiusX = (stageWidth - cardWidth) * 0.48;
+  const radiusY = stageHeight * 0.16;
+  const phase = (index / total) * Math.PI * 2;
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const angle = progress.value * Math.PI * 2 + phase;
+    const depth = (Math.cos(angle) + 1) / 2;
+    const scale = 0.62 + depth * 0.48;
+
+    return {
+      opacity: 0.48 + depth * 0.52,
+      zIndex: Math.round(depth * 100),
+      transform: [
+        { translateX: Math.sin(angle) * radiusX },
+        { translateY: Math.cos(angle) * radiusY },
+        { perspective: 700 },
+        { rotateY: `${Math.sin(angle) * -18}deg` },
+        { scale },
+      ],
+    };
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.orbitingPhoto,
+        {
+          width: cardWidth,
+          height: cardHeight,
+          left: (stageWidth - cardWidth) / 2,
+          top: (stageHeight - cardHeight) / 2,
+        },
+        animatedStyle,
+      ]}
+    >
+      <Image
+        source={photo.source}
+        placeholder={photo.fallback}
+        style={{ width: '100%', height: '100%' }}
+        contentFit="cover"
+        cachePolicy="disk"
+        transition={350}
+      />
+    </Animated.View>
+  );
+}
+
+type MovingPhotoCarouselProps = {
   stageWidth: number;
 };
 
-function MovingPhotoReel({ stageWidth }: MovingPhotoReelProps) {
+function MovingPhotoCarousel({ stageWidth }: MovingPhotoCarouselProps) {
   const reduceMotion = useReducedMotion();
   const progress = useSharedValue(0);
-  const scale = stageWidth / 390;
-  const gap = -14 * scale;
-  const reelWidth = useMemo(
-    () => CARD_WIDTHS.reduce((total, cardWidth) => total + cardWidth * scale + gap, 0),
-    [gap, scale],
-  );
+  const stageHeight = stageWidth * 0.52;
   const [photos] = useState<ReelPhoto[]>(() => {
     const fallbacks = shuffle(PHOTOS);
     const remotePhotos = randomWebPhotos(fallbacks.length);
@@ -72,55 +126,40 @@ function MovingPhotoReel({ stageWidth }: MovingPhotoReelProps) {
     progress.set(0);
     if (!reduceMotion) {
       progress.set(
-        withRepeat(withTiming(1, { duration: REEL_DURATION, easing: Easing.linear }), -1, false),
+        withRepeat(
+          withTiming(1, { duration: CAROUSEL_DURATION, easing: Easing.linear }),
+          -1,
+          false,
+        ),
       );
     }
 
     return () => cancelAnimation(progress);
   }, [progress, reduceMotion]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: -progress.value * reelWidth }],
-  }));
-
   return (
-    <View style={{ width: stageWidth, height: stageWidth * 0.36, overflow: 'hidden' }}>
-      <Animated.View
+    <View style={[styles.carouselStage, { width: stageWidth, height: stageHeight }]}>
+      <View
         style={[
-          styles.reelTrack,
-          { width: reelWidth * 2, height: stageWidth * 0.36 },
-          animatedStyle,
+          styles.orbitGuide,
+          {
+            width: stageWidth * 0.76,
+            height: stageHeight * 0.44,
+            left: stageWidth * 0.12,
+            top: stageHeight * 0.3,
+          },
         ]}
-      >
-        {[0, 1].map((copy) => (
-          <View key={copy} style={[styles.reelGroup, { width: reelWidth }]}>
-            {photos.map((photo, index) => (
-              <View
-                key={`${copy}-${photo.key}`}
-                style={[
-                  styles.photoFrame,
-                  {
-                    width: CARD_WIDTHS[index] * scale,
-                    height: CARD_HEIGHTS[index] * scale,
-                    marginRight: gap,
-                    marginTop: CARD_TOPS[index] * scale,
-                    zIndex: index % 2 === 0 ? 1 : 2,
-                  },
-                ]}
-              >
-                <Image
-                  source={photo.source}
-                  placeholder={photo.fallback}
-                  style={{ width: '100%', height: '100%' }}
-                  contentFit="cover"
-                  cachePolicy="disk"
-                  transition={350}
-                />
-              </View>
-            ))}
-          </View>
-        ))}
-      </Animated.View>
+      />
+      {photos.map((photo, index) => (
+        <OrbitingPhoto
+          key={photo.key}
+          index={index}
+          photo={photo}
+          progress={progress}
+          stageWidth={stageWidth}
+          total={photos.length}
+        />
+      ))}
     </View>
   );
 }
@@ -172,7 +211,7 @@ export default function StartScreen() {
         style={{ top: compactHeight ? '33%' : '40%' }}
         pointerEvents="none"
       >
-        <MovingPhotoReel stageWidth={stageWidth} />
+        <MovingPhotoCarousel stageWidth={stageWidth} />
 
         <View className={compactHeight ? 'mt-3 items-center' : 'mt-6 items-center'}>
           <Text
@@ -198,22 +237,31 @@ export default function StartScreen() {
 }
 
 const styles = StyleSheet.create({
-  reelTrack: {
-    flexDirection: 'row',
+  carouselStage: {
+    position: 'relative',
+    overflow: 'visible',
   },
-  reelGroup: {
-    flexDirection: 'row',
+  orbitGuide: {
+    position: 'absolute',
+    borderWidth: 1,
+    borderColor: 'rgba(229, 190, 255, 0.22)',
+    borderRadius: 999,
+    shadowColor: '#D7B2FF',
+    shadowOpacity: 0.32,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 0 },
   },
-  photoFrame: {
+  orbitingPhoto: {
+    position: 'absolute',
     overflow: 'hidden',
     borderWidth: 4,
     borderColor: '#CDA5F4',
     borderRadius: 16,
     backgroundColor: '#2C214A',
     shadowColor: '#D7B2FF',
-    shadowOpacity: 0.28,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.34,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
     elevation: 7,
   },
   wordmark: {
