@@ -4,7 +4,7 @@ import { Plus, Search, Sparkles } from 'lucide-react-native';
 import { FlatList, Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { BrandWordmark } from '@/components/BrandWordmark';
+import { BrandLogo } from '@/components/BrandLogo';
 import { EmptyState } from '@/components/EmptyState';
 import { MomentCard } from '@/components/MomentCard';
 import { MomentFilmstrip } from '@/components/MomentFilmstrip';
@@ -29,7 +29,7 @@ export default function MomentsScreen() {
         ListHeaderComponent={
           <View className="gap-4 pt-1">
             <View className="flex-row items-center justify-between">
-              <BrandWordmark size={24} />
+              <BrandLogo size={32} />
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t('common.search')}
