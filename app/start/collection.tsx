@@ -1,10 +1,11 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Button, Typography, useThemeColor } from 'heroui-native';
-import { Images, Search, User } from 'lucide-react-native';
+import { Images, Search } from 'lucide-react-native';
 import { ScrollView, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { BrandLogo } from '@/components/BrandLogo';
 import { EmptyState } from '@/components/EmptyState';
 import { MomentFilmstrip } from '@/components/MomentFilmstrip';
 import { StepDots } from '@/components/StepDots';
@@ -25,11 +26,10 @@ export default function StartCollectionScreen() {
       {/* oxlint-disable-next-line react/style-prop-object -- expo-status-bar's `style` is a string enum */}
       <StatusBar style="light" />
       <StepHeader
-        title={t('start.yourMoments')}
+        centerContent={<BrandLogo size={32} />}
         onBack={() => goBackOrReplace('/start/capture')}
-        actionLabel={t('common.profile')}
-        actionIcon={User}
-        onAction={() => router.replace('/profile')}
+        actionLabel={t('tabs.home')}
+        onAction={() => router.replace('/moments')}
       />
       <ScrollView
         showsVerticalScrollIndicator={false}

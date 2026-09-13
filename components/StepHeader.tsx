@@ -1,10 +1,12 @@
 import { Typography, useThemeColor } from 'heroui-native';
 import { ChevronLeft } from 'lucide-react-native';
 import type { LucideIcon } from 'lucide-react-native';
+import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 
 type StepHeaderProps = {
-  title: string;
+  title?: string;
+  centerContent?: ReactNode;
   onBack: () => void;
   /** Trailing control: either a text label or an icon. */
   actionLabel?: string;
@@ -15,6 +17,7 @@ type StepHeaderProps = {
 /** Compact header for the start screens: back on the left, one action on the right. */
 export function StepHeader({
   title,
+  centerContent,
   onBack,
   actionLabel,
   actionIcon: ActionIcon,
@@ -34,7 +37,7 @@ export function StepHeader({
         <ChevronLeft size={22} color={foreground} />
       </Pressable>
 
-      <Typography.Heading type="h5">{title}</Typography.Heading>
+      {centerContent ?? (title ? <Typography.Heading type="h5">{title}</Typography.Heading> : null)}
 
       {onAction ? (
         <Pressable
