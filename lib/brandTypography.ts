@@ -16,7 +16,8 @@ export const brandFontFamilies = {
 export const brandTypography = StyleSheet.create({
   wordmark: {
     fontFamily: brandFontFamilies.wordmark,
-    letterSpacing: -2.5,
+    fontWeight: '700',
+    letterSpacing: -1.5,
   },
   tagline: {
     fontFamily: brandFontFamilies.uiMedium,

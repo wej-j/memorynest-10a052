@@ -209,12 +209,12 @@ export default function StartScreen() {
 
       <View
         className="absolute inset-x-0 items-center px-3"
-        style={{ top: compactHeight ? '33%' : '40%' }}
+        style={{ top: compactHeight ? '29%' : '36%' }}
         pointerEvents="none"
       >
         <MovingPhotoCarousel stageWidth={stageWidth} />
 
-        <View className={compactHeight ? 'mt-3 items-center' : 'mt-6 items-center'}>
+        <View style={{ marginTop: compactHeight ? 4 : 8 }} className="items-center">
           <Text
             accessibilityRole="header"
             style={[
