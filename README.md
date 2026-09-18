@@ -1,4 +1,5 @@
 # Remory
+[View the Remory presentation](Remory_Presentation_Centered_FinalText.pdf)
 
  **Remember. Relive. Remory.**
 
